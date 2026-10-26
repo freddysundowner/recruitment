@@ -258,6 +258,19 @@ export async function saveMessaging(_: FormState, fd: FormData): Promise<FormSta
   }
 }
 
+/** The two rules an agency can relax while it is getting started: comparing contract copies, and vetting employers. */
+export async function saveRules(_: FormState, fd: FormData): Promise<FormState> {
+  try {
+    const ctx = await requireCan("users:manage");
+    const rules = { contract_check: fd.get("contract_check") === "on", require_vetting: fd.get("require_vetting") === "on" };
+    await mergeSettings(ctx, { rules }, "settings.rules", rules);
+    return { ok: "Saved", next: steps.settingsSaved("rules") };
+  } catch (e) {
+    unstable_rethrow(e);
+    return fail(e);
+  }
+}
+
 export async function saveSecurity(_: FormState, fd: FormData): Promise<FormState> {
   try {
     const ctx = await requireCan("users:manage");

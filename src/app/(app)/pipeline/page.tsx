@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { Tabs } from "@/components/shell/Tabs";
+import { TABS } from "@/components/shell/tabs-data";
 import { ArrowRight, Clock, KanbanSquare, LayoutList, Plus, Search, X } from "lucide-react";
 import { withTenant } from "@/lib/db";
 import { requireCtx } from "@/lib/session";
@@ -79,6 +81,7 @@ export default async function Pipeline({ searchParams }: PageProps<"/pipeline">)
 
   return (
     <>
+      <Tabs items={TABS.candidates} />
       <PageHeader title="Pipeline" sub={`${d.total} ${d.total === 1 ? "candidate" : "candidates"}${filtered ? " match your filters" : " in progress"}${stageName ? `, in ${stageName}` : ""}.`}>
         <div className="seg" role="group" aria-label="View">
           <Link href={href({ view: undefined, stage: undefined, page: undefined })} className="seg-item" aria-current={!list ? "true" : undefined}><KanbanSquare size={15} /> Board</Link>

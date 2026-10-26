@@ -4,10 +4,16 @@ import { withTenant } from "@/lib/db";
 import { requireCtx } from "@/lib/session";
 import { can } from "@/lib/perms";
 import { decrypt, mask } from "@/lib/crypto";
-import { DOC_TYPES } from "@/lib/stages";
+import { loadGuide } from "@/lib/guide";
+import { CLOSE_REASONS, DOC_TYPES } from "@/lib/stages";
 import { ActionForm } from "@/components/ActionForm";
 import { CandidateFields } from "@/components/CandidateFields";
-import { assignJobOrder, reopenCandidate } from "@/app/actions/placements";
+import { OpenOnHash } from "@/components/OpenOnHash";
+import { GuidedPanel } from "@/components/placement/GuidedPanel";
+import { Operations } from "@/components/placement/Operations";
+import { Money } from "@/components/placement/Money";
+import { Section } from "@/components/ui/Section";
+import { closePlacement, moveStageAction } from "@/app/actions/placements";
 import { reviewDocument, updateCandidate, uploadDocument } from "@/app/actions/candidates";
 import { addComplaint } from "@/app/actions/operations";
 
@@ -21,83 +27,77 @@ export default async function Candidate({ params }: PageProps<"/candidates/[id]"
   const data = await withTenant(ctx.tenantId, async (tx) => {
     const [c] = await tx`SELECT * FROM candidates WHERE id = ${id}`;
     if (!c) return null;
+    const [live] = await tx`
+      SELECT p.id, p.payment_model, p.outcome, c.phone AS cphone, s.position, s.required_doc_types,
+             j.title, j.country, j.placement_fee_minor, j.fee_currency, e.company, e.currency AS employer_currency, e.vetted
+      FROM placements p JOIN candidates c ON c.id = p.candidate_id JOIN pipeline_stages s ON s.id = p.stage_id
+      LEFT JOIN job_orders j ON j.id = p.job_order_id LEFT JOIN employers e ON e.id = j.employer_id
+      WHERE p.candidate_id = ${id} AND p.outcome <> 'closed' ORDER BY p.created_at DESC LIMIT 1`;
     return {
       c,
+      live,
       docs: await tx`SELECT *, (expiry_date - current_date) AS days FROM documents WHERE candidate_id = ${id} ORDER BY created_at DESC`,
-      placements: await tx`
-        SELECT p.*, s.name AS stage, j.title, e.company FROM placements p
-        JOIN pipeline_stages s ON s.id = p.stage_id
-        LEFT JOIN job_orders j ON j.id = p.job_order_id LEFT JOIN employers e ON e.id = j.employer_id
-        WHERE p.candidate_id = ${id} ORDER BY p.created_at DESC`,
+      closed: await tx`SELECT p.close_reason, j.title FROM placements p LEFT JOIN job_orders j ON j.id = p.job_order_id WHERE p.candidate_id = ${id} AND p.outcome = 'closed' ORDER BY p.created_at DESC`,
+      history: live ? await tx`
+        SELECT h.*, f.name AS from_name, t.name AS to_name, u.name AS who
+        FROM stage_history h LEFT JOIN pipeline_stages f ON f.id = h.from_stage_id
+        LEFT JOIN pipeline_stages t ON t.id = h.to_stage_id LEFT JOIN users u ON u.id = h.user_id
+        WHERE h.placement_id = ${live.id} ORDER BY h.created_at DESC` : [],
+      stages: await tx`SELECT id, position, name FROM pipeline_stages ORDER BY position`,
       complaints: await tx`SELECT * FROM complaints WHERE candidate_id = ${id} ORDER BY created_at DESC`,
       messages: await tx`SELECT channel, status, template, left(body, 120) AS body, created_at FROM messages WHERE candidate_id = ${id} ORDER BY created_at DESC LIMIT 8`,
       jobs: await tx`
         SELECT j.id, j.title, j.country, j.quantity, e.company, e.vetted,
-          (SELECT count(*) FROM placements p WHERE p.job_order_id = j.id AND p.outcome <> 'closed') AS filled
+          (SELECT count(*) FROM placements p WHERE p.job_order_id = j.id AND p.outcome <> 'closed')::int AS filled
         FROM job_orders j JOIN employers e ON e.id = j.employer_id WHERE j.status = 'open' ORDER BY e.company, j.title`,
     };
   });
   if (!data) notFound();
-  const { c, docs, placements, jobs, complaints, messages } = data;
-  const live = placements.find((p) => p.outcome !== "closed");
+  const { c, live, docs, closed, history, stages, jobs, complaints, messages } = data;
+
   const writeC = can(ctx.role, "candidates:write");
   const writeD = can(ctx.role, "documents:write");
   const verify = can(ctx.role, "documents:verify");
   const move = can(ctx.role, "pipeline:move");
+  const money = can(ctx.role, "finance:read");
+  const writeMoney = can(ctx.role, "finance:write");
+  const admin = can(ctx.role, "pipeline:override");
+
+  const guide = live ? await loadGuide(ctx.tenantId, live.id) : null;
+  const focus = guide ? guide.items.filter((i) => !i.done && i.anchor).map((i) => i.anchor as string) : [];
+  const pos = guide?.cur.position ?? 0;
+
+  const pending = docs.filter((d) => d.status === "pending").length;
+  const verified = docs.filter((d) => d.status === "verified").length;
 
   return (
     <div className="grid gap-4">
+      <OpenOnHash />
       <div className="page-header">
         <div className="flex items-center gap-3">
           <span className="avatar" style={{ width: 48, height: 48, fontSize: 16 }}>{`${c.first_name[0]}${c.last_name[0]}`}</span>
           <div>
             <h1 className="h1">{c.first_name} {c.last_name}</h1>
-            <div className="muted flex items-center gap-2 flex-wrap">{c.phone}{c.county ? ` · ${c.county}` : ""}<span className={`badge ${c.status === "placed" ? "badge-good" : ""}`}>{c.status}</span>{c.source === "sample" && <span className="badge badge-info">sample</span>}</div>
+            <div className="muted flex items-center gap-2 flex-wrap">
+              {c.phone}{c.county ? ` · ${c.county}` : ""}
+              <span className={`badge ${c.status === "placed" ? "badge-good" : ""}`}>{c.status}</span>
+              {c.source === "sample" && <span className="badge badge-info">sample</span>}
+            </div>
+            {live?.title && (
+              <div className="muted mt-0.5">
+                {live.title} · {live.company} · {live.country}
+                {live.payment_model && <span className="badge ml-2">{live.payment_model === "employer_paid" ? "Employer pays costs" : "Candidate pays costs"}</span>}
+                {live.company && !live.vetted && <span className="badge badge-warn ml-2">employer not vetted</span>}
+              </div>
+            )}
           </div>
         </div>
         <Link href="/candidates" className="btn btn-ghost">Back to candidates</Link>
       </div>
 
-      <div id="placement" className="card" style={{ scrollMarginTop: 80 }}>
-        <div className="h2 mb-2">Placement</div>
-        {live ? (
-          <div className="grid gap-3">
-            <div className="flex items-center gap-3 flex-wrap">
-              <span className="badge badge-brand">{live.stage}</span>
-              <span>{live.title ? `${live.title} · ${live.company}` : "No job order assigned yet"}</span>
-              <Link className="link" href={`/placements/${live.id}`}>Open placement</Link>
-            </div>
-            {!live.job_order_id && move && (
-              <ActionForm action={assignJobOrder.bind(null, live.id)} submit="Assign job order" className="flex flex-wrap items-end gap-2" buttonClass="btn btn-primary">
-                <div className="min-w-64">
-                  <label className="label" htmlFor="job_order_id">Match to a job order</label>
-                  <select id="job_order_id" name="job_order_id" className="select" required defaultValue="">
-                    <option value="" disabled>Choose…</option>
-                    {jobs.map((j) => (
-                      <option key={j.id} value={j.id} disabled={Number(j.filled) >= j.quantity}>
-                        {j.title} · {j.company} ({Number(j.filled)}/{j.quantity}){j.vetted ? "" : " · not vetted"}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </ActionForm>
-            )}
-          </div>
-        ) : (
-          <div className="flex items-center gap-3">
-            <span className="muted">Not in the pipeline.</span>
-            {move && <ActionForm confirm="Put this candidate back into the pipeline at the first stage?" action={reopenCandidate.bind(null, c.id)} submit="Re-enter pipeline" buttonClass="btn btn-sm" className=""><></></ActionForm>}
-          </div>
-        )}
-        {placements.filter((p) => p.outcome === "closed").length > 0 && (
-          <div className="mt-3 muted text-xs">
-            Past: {placements.filter((p) => p.outcome === "closed").map((p) => `${p.title ?? "no job"} (${p.close_reason})`).join("; ")}
-          </div>
-        )}
-      </div>
+      <GuidedPanel candidateId={c.id} guide={guide} canMove={move} jobs={jobs as never} />
 
-      <div id="documents" className="card" style={{ scrollMarginTop: 80 }}>
-        <div className="h2 mb-2">Documents</div>
+      <Section id="documents" title="Documents" status={docs.length === 0 ? "none yet" : pending ? `${pending} waiting to be checked` : `${verified} verified`} tone={pending ? "warn" : verified ? "good" : undefined} open={focus.includes("#documents") || pos <= 2}>
         <div className="overflow-x-auto">
           <table className="table">
             <thead><tr><th>Type</th><th>Number</th><th>Expires</th><th>Status</th><th></th></tr></thead>
@@ -142,10 +142,22 @@ export default async function Candidate({ params }: PageProps<"/candidates/[id]"
             <div><label className="label" htmlFor="file">File (PDF, JPG or PNG, up to 8 MB)</label><input id="file" name="file" type="file" accept=".pdf,.jpg,.jpeg,.png" required className="input" /></div>
           </ActionForm>
         )}
-      </div>
+      </Section>
 
-      <div className="card">
-        <div className="h2 mb-2">Messages sent</div>
+      {live && (
+        <Operations placementId={live.id} tenantId={ctx.tenantId} canEdit={move} pos={pos} focus={focus} />
+      )}
+
+      {live && money && (
+        <Money
+          p={{ id: live.id, payment_model: live.payment_model, cphone: live.cphone, placement_fee_minor: live.placement_fee_minor, fee_currency: live.fee_currency, employer_currency: live.employer_currency }}
+          tenantId={ctx.tenantId}
+          canWrite={writeMoney}
+          open={focus.includes("#money")}
+        />
+      )}
+
+      <Section id="messages" title="Messages sent" status={messages.length ? String(messages.length) : "none"}>
         <table className="table"><tbody>
           {messages.map((m, i) => (
             <tr key={i}>
@@ -157,32 +169,67 @@ export default async function Candidate({ params }: PageProps<"/candidates/[id]"
           ))}
           {messages.length === 0 && <tr><td className="muted">No messages yet.</td></tr>}
         </tbody></table>
-      </div>
+      </Section>
 
-      <div className="card">
-        <div className="h2 mb-2">Complaints</div>
+      <Section id="complaints" title="Complaints" status={complaints.length ? `${complaints.filter((x) => x.status !== "resolved").length} open` : "none"} tone={complaints.some((x) => x.status !== "resolved") ? "bad" : undefined}>
         {complaints.map((x) => (
           <div key={x.id} className="mb-2"><span className={`badge ${x.status === "resolved" ? "badge-good" : "badge-bad"} mr-2`}>{x.status}</span><b>{x.subject}</b><div className="muted text-xs">{x.body}</div></div>
         ))}
         {complaints.length === 0 && <p className="muted">None.</p>}
         {writeC && (
-          <details className="mt-2">
-            <summary className="link cursor-pointer">Record a complaint on their behalf</summary>
-            <ActionForm action={addComplaint.bind(null, c.id)} submit="Record complaint" className="grid gap-3 mt-2">
-              <div><label className="label" htmlFor="subject">Subject</label><input id="subject" name="subject" required className="input" /></div>
-              <div><label className="label" htmlFor="body">What happened</label><textarea id="body" name="body" rows={3} required className="textarea" /></div>
-            </ActionForm>
-          </details>
+          <ActionForm action={addComplaint.bind(null, c.id)} submit="Record complaint" className="grid gap-3 mt-3 pt-3 border-t border-[var(--line)]">
+            <div className="h2">Record a complaint on their behalf</div>
+            <div><label className="label" htmlFor="subject">Subject</label><input id="subject" name="subject" required className="input" /></div>
+            <div><label className="label" htmlFor="body">What happened</label><textarea id="body" name="body" rows={3} required className="textarea" /></div>
+          </ActionForm>
         )}
-      </div>
+      </Section>
+
+      {live && (
+        <Section id="history" title="Stage history" status={`${history.length} change${history.length === 1 ? "" : "s"}`}>
+          <table className="table">
+            <tbody>
+              {history.map((h) => (
+                <tr key={h.id}>
+                  <td className="whitespace-nowrap">{new Date(h.created_at).toLocaleString("en-KE")}</td>
+                  <td>{h.from_name ? `${h.from_name} → ` : ""}{h.to_name}{h.override && <span className="badge badge-warn ml-2">override</span>}</td>
+                  <td>{h.who}</td>
+                  <td className="muted">{h.note}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {closed.length > 0 && <div className="mt-3 muted text-xs">Past: {closed.map((p) => `${p.title ?? "no job"} (${p.close_reason})`).join("; ")}</div>}
+        </Section>
+      )}
 
       {writeC && (
-        <details className="card">
-          <summary className="h2 cursor-pointer">Edit profile</summary>
-          <ActionForm action={updateCandidate.bind(null, c.id)} submit="Save changes" resetOnSuccess={false} className="grid gap-3 mt-3">
+        <Section id="profile" title="Edit profile">
+          <ActionForm action={updateCandidate.bind(null, c.id)} submit="Save changes" resetOnSuccess={false} className="grid gap-3">
             <CandidateFields v={{ ...c, id_number: c.id_number_enc ? decrypt(c.id_number_enc) : "", dob: c.dob ? new Date(c.dob).toISOString().slice(0, 10) : "" }} />
           </ActionForm>
-        </details>
+        </Section>
+      )}
+
+      {live && move && guide && (
+        <Section id="advanced" title="Move to another stage, or close" status="advanced">
+          <ActionForm confirm="Move this candidate to the chosen stage? The candidate and the employer may be messaged automatically." action={moveStageAction.bind(null, live.id)} submit="Move" className="grid gap-3 sm:grid-cols-[220px_1fr_auto] items-end">
+            <div>
+              <label className="label" htmlFor="stage_id">Move to</label>
+              <select id="stage_id" name="stage_id" className="select" defaultValue="">
+                <option value="" disabled>Choose a stage…</option>
+                {stages.filter((s) => s.position !== pos).map((s) => <option key={s.id} value={s.id}>{s.position}. {s.name}</option>)}
+              </select>
+            </div>
+            <div><label className="label" htmlFor="note">Note (required to override)</label><input id="note" name="note" className="input" /></div>
+            {admin && <label className="flex items-center gap-2 pb-2"><input type="checkbox" name="override" /> Override gates</label>}
+          </ActionForm>
+          <ActionForm action={closePlacement.bind(null, live.id)} submit="Close placement" buttonClass="btn btn-danger" className="grid gap-3 mt-5 pt-4 border-t border-[var(--line)] max-w-lg" confirm="Close this placement? Costs stay on the ledger.">
+            <div className="h2">Close this placement</div>
+            <div><label className="label" htmlFor="reason">Reason</label><select id="reason" name="reason" className="select">{CLOSE_REASONS.map((r) => <option key={r}>{r}</option>)}</select></div>
+            <div><label className="label" htmlFor="close_note">Note</label><input id="close_note" name="note" className="input" /></div>
+          </ActionForm>
+        </Section>
       )}
     </div>
   );

@@ -1,7 +1,8 @@
 import { withTenant } from "@/lib/db";
-import { contractStatus, requiredDocs } from "@/lib/pipeline";
+import { contractStatus } from "@/lib/pipeline";
 import { formatMoney, CURRENCIES } from "@/lib/money";
 import { ActionForm } from "@/components/ActionForm";
+import { Section } from "@/components/ui/Section";
 import {
   addAppointment, addContract, completeCheckin, saveTravel, setAppointmentResult, toggleStep,
 } from "@/app/actions/operations";
@@ -17,8 +18,10 @@ const text = (name: string, label: string, v?: unknown) => (
   <div><label className="label" htmlFor={`t_${name}`}>{label}</label><input id={`t_${name}`} name={name} defaultValue={(v as string) ?? ""} className="input" /></div>
 );
 
-export async function Operations({ placementId, tenantId, canEdit, stageRequiredDocs, candidateId }: {
-  placementId: string; tenantId: string; canEdit: boolean; stageRequiredDocs: string[]; candidateId: string;
+export async function Operations({ placementId, tenantId, canEdit, pos, focus }: {
+  placementId: string; tenantId: string; canEdit: boolean;
+  /** The stage the placement is at, and which anchors the guide says still need attention. */
+  pos: number; focus: string[];
 }) {
   const d = await withTenant(tenantId, async (tx) => {
     const [pl] = await tx`SELECT j.country, j.category FROM placements p LEFT JOIN job_orders j ON j.id = p.job_order_id WHERE p.id = ${placementId}`;
@@ -27,12 +30,9 @@ export async function Operations({ placementId, tenantId, canEdit, stageRequired
           SELECT * FROM country_checklists WHERE lower(country) = lower(${pl.country}) AND (lower(job_category) = lower(${pl.category ?? ""}) OR job_category = '')
           ORDER BY (job_category <> '') DESC LIMIT 1`
       : [];
-    const required = await requiredDocs(tx, placementId, stageRequiredDocs);
     return {
       country: pl?.country as string | null,
       checklist,
-      required,
-      docs: await tx`SELECT doc_type, status, expiry_date FROM documents WHERE candidate_id = ${candidateId}`,
       steps: await tx`SELECT step FROM placement_steps WHERE placement_id = ${placementId}`,
       travel: (await tx`SELECT * FROM placement_travel WHERE placement_id = ${placementId}`)[0],
       appts: await tx`SELECT * FROM appointments WHERE placement_id = ${placementId} ORDER BY scheduled_at DESC`,
@@ -44,14 +44,6 @@ export async function Operations({ placementId, tenantId, canEdit, stageRequired
   const { travel: t, contract } = d;
   const stepsDone = new Set(d.steps.map((s) => s.step as string));
   const today = new Date().toISOString().slice(0, 10);
-
-  const docStatus = (type: string) => {
-    const mine = d.docs.filter((x) => x.doc_type === type);
-    if (mine.some((x) => x.status === "verified" && (!x.expiry_date || iso(x.expiry_date) >= today))) return ["verified", "badge-good"];
-    if (mine.some((x) => x.status === "pending")) return ["awaiting verification", "badge-warn"];
-    if (mine.some((x) => x.status === "verified")) return ["expired", "badge-bad"];
-    return ["missing", "badge-bad"];
-  };
 
   const contractForm = (party: "candidate" | "employer") => {
     const c = party === "candidate" ? contract.candidate : contract.employer;
@@ -73,41 +65,25 @@ export async function Operations({ placementId, tenantId, canEdit, stageRequired
 
   return (
     <>
-      {(d.required.length > 0 || d.checklist) && (
-        <div id="checklist" style={{ scrollMarginTop: 80 }} className="card">
-          <div className="h2 mb-1">Checklist for {d.country ?? "destination"}</div>
-          {!d.checklist && <p className="muted text-xs mb-2">Using the stage defaults. Add a checklist for this country in Settings to customise it.</p>}
-          <div className="grid md:grid-cols-2 gap-4">
-            <div>
-              <div className="label">Documents</div>
-              <ul className="grid gap-1">
-                {d.required.map((r) => {
-                  const [label, cls] = docStatus(r);
-                  return <li key={r} className="flex items-center justify-between gap-2"><span>{r}</span><span className={`badge ${cls}`}>{label}</span></li>;
-                })}
-              </ul>
-            </div>
-            {d.checklist && (d.checklist.steps as string[]).length > 0 && (
-              <div>
-                <div className="label">Steps</div>
-                <ul className="grid gap-1">
-                  {(d.checklist.steps as string[]).map((s) => (
-                    <li key={s} className="flex items-center justify-between gap-2">
-                      <span className={stepsDone.has(s) ? "line-through muted" : ""}>{s}</span>
-                      {canEdit && (
-                        <ActionForm action={toggleStep.bind(null, placementId, s, !stepsDone.has(s))} submit={stepsDone.has(s) ? "Undo" : "Done"} buttonClass="btn btn-sm" className="inline"><></></ActionForm>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </div>
-        </div>
+      {d.checklist && (d.checklist.steps as string[]).length > 0 && (
+        <Section id="checklist" title={`Checklist for ${d.country ?? "destination"}`} status={`${(d.checklist.steps as string[]).filter((x) => stepsDone.has(x)).length} of ${(d.checklist.steps as string[]).length} done`} open={focus.includes("#checklist")}>
+          <ul className="grid gap-1">
+            {(d.checklist.steps as string[]).map((st) => (
+              <li key={st} className="flex items-center justify-between gap-2">
+                <span className={stepsDone.has(st) ? "line-through muted" : ""}>{st}</span>
+                {canEdit && (
+                  <ActionForm action={toggleStep.bind(null, placementId, st, !stepsDone.has(st))} submit={stepsDone.has(st) ? "Undo" : "Done"} buttonClass="btn btn-sm" className="inline"><></></ActionForm>
+                )}
+              </li>
+            ))}
+          </ul>
+        </Section>
       )}
 
-      <div id="contract" style={{ scrollMarginTop: 80 }} className="card">
-        <div className="h2 mb-2">Contract</div>
+      {(pos >= 4 || d.contracts.length > 0 || focus.includes("#contract")) && (
+      <Section id="contract" title="Contract"
+        status={contract.differences.length ? "copies differ" : contract.candidate && contract.employer ? "both copies agree" : d.contracts.length ? "one copy recorded" : "not recorded"}
+        tone={contract.differences.length ? "bad" : contract.candidate && contract.employer ? "good" : "warn"} open={focus.includes("#contract") || pos === 5}>
         {contract.differences.length > 0 && (
           <div className="alert mb-3">The candidate&apos;s copy and the employer&apos;s copy differ on: {contract.differences.join(", ")}. This can mean the terms were changed. Do not proceed until it is explained.</div>
         )}
@@ -117,10 +93,11 @@ export async function Operations({ placementId, tenantId, canEdit, stageRequired
         ) : (
           <p className="muted">{d.contracts.length} contract record(s).</p>
         )}
-      </div>
+      </Section>
+      )}
 
-      <div id="travel" style={{ scrollMarginTop: 80 }} className="card">
-        <div className="h2 mb-2">Visa and travel</div>
+      {(pos >= 6 || t || focus.includes("#travel")) && (
+      <Section id="travel" title="Visa and travel" status={`visa ${(t?.visa_status ?? "not started").replace("_", " ")}`} tone={t?.visa_status === "approved" ? "good" : t?.visa_status === "refused" ? "bad" : undefined} open={focus.includes("#travel") || pos === 7}>
         {canEdit ? (
           <ActionForm action={saveTravel.bind(null, placementId)} submit="Save travel details" resetOnSuccess={false}>
             <div className="grid sm:grid-cols-3 gap-3">
@@ -148,10 +125,10 @@ export async function Operations({ placementId, tenantId, canEdit, stageRequired
         ) : (
           <p className="muted">Visa: {t?.visa_status ?? "not started"}</p>
         )}
-      </div>
+      </Section>
+      )}
 
-      <div id="appointments" style={{ scrollMarginTop: 80 }} className="card">
-        <div className="h2 mb-2">Appointments</div>
+      <Section id="appointments" title="Appointments" status={d.appts.filter((a) => a.result === "pending").length ? `${d.appts.filter((a) => a.result === "pending").length} coming up` : d.appts.length ? `${d.appts.length} done` : "none yet"} open={focus.includes("#appointments") || pos === 3 || pos === 4}>
         <table className="table">
           <tbody>
             {d.appts.map((a) => (
@@ -186,11 +163,10 @@ export async function Operations({ placementId, tenantId, canEdit, stageRequired
             </div>
           </ActionForm>
         )}
-      </div>
+      </Section>
 
       {d.checkins.length > 0 && (
-        <div className="card">
-          <div className="h2 mb-2">Follow-up check-ins</div>
+        <Section id="followup" title="Follow-up check-ins" status={`${d.checkins.filter((c) => !c.done_on).length} to do`} tone={d.checkins.some((c) => !c.done_on && iso(c.due_on) < today) ? "bad" : undefined} open={pos >= 8}>
           <table className="table">
             <tbody>
               {d.checkins.map((c) => (
@@ -210,7 +186,7 @@ export async function Operations({ placementId, tenantId, canEdit, stageRequired
               ))}
             </tbody>
           </table>
-        </div>
+        </Section>
       )}
     </>
   );

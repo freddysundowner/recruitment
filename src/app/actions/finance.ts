@@ -11,8 +11,8 @@ import { fail, field, type FormState } from "@/lib/form";
 import { formatMoney, toMinor } from "@/lib/money";
 import { notifyCandidate } from "@/lib/notify";
 
-function refresh(placementId: string) {
-  revalidatePath(`/placements/${placementId}`);
+function refresh(_placementId: string) {
+  revalidatePath("/candidates/[id]", "page");
   revalidatePath("/finance");
   revalidatePath("/");
 }

@@ -17,6 +17,7 @@ export default async function SettingsLayout({ children }: LayoutProps<"/setting
       { href: "/settings/pipeline", label: "Pipeline and checklists", icon: "pipeline", hint: "Stages, rules, country lists" },
     ] },
     { title: "Money and messages", items: [
+      ...(!access.singleInstall ? [{ href: "/billing", label: "Plan and billing", icon: "billing" as const, hint: "Your subscription" }] : []),
       { href: "/settings/payments", label: "Payments", icon: "payments", hint: "M-Pesa and fee limit" },
       { href: "/settings/messages", label: "Messages", icon: "messages", hint: "SMS, WhatsApp, email" },
     ] },

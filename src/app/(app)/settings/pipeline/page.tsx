@@ -3,6 +3,7 @@ import { requirePageCan } from "@/lib/session";
 import { ActionForm } from "@/components/ActionForm";
 import { SettingsCard } from "@/components/ui/SettingsCard";
 import { deleteChecklist, saveChecklist } from "@/app/actions/operations";
+import { saveRules } from "@/app/actions/org";
 import { DOC_TYPES } from "@/lib/stages";
 
 export default async function PipelineSettings() {
@@ -10,9 +11,17 @@ export default async function PipelineSettings() {
   const d = await withTenant(ctx.tenantId, async (tx) => ({
     stages: await tx`SELECT * FROM pipeline_stages ORDER BY position`,
     checklists: await tx`SELECT * FROM country_checklists ORDER BY country, job_category`,
+    rules: ((await tx`SELECT settings FROM tenants WHERE id = ${ctx.tenantId}`)[0].settings?.rules ?? {}) as { contract_check?: boolean; require_vetting?: boolean },
   }));
   return (
     <>
+      <SettingsCard title="Rules you can relax" desc="Two checks that suit an established agency but can slow a new one down. Turn them on when you are ready. Document, fee, visa and orientation checks always apply.">
+        <ActionForm action={saveRules} submit="Save" resetOnSuccess={false} className="grid gap-3 max-w-xl">
+          <label className="flex items-start gap-2"><input type="checkbox" name="require_vetting" defaultChecked={d.rules.require_vetting !== false} className="mt-1" /><span><b>Only use vetted employers</b><span className="block muted text-xs">Candidates cannot go past the shortlist until the employer has a passed registration check.</span></span></label>
+          <label className="flex items-start gap-2"><input type="checkbox" name="contract_check" defaultChecked={d.rules.contract_check !== false} className="mt-1" /><span><b>Compare the candidate&apos;s and the employer&apos;s contract copies</b><span className="block muted text-xs">Both copies must be recorded and agree on salary, hours and length before the next stage. This catches contract substitution.</span></span></label>
+        </ActionForm>
+      </SettingsCard>
+
       <SettingsCard id="checklists" title="Country checklists" desc="What a worker needs before leaving for each country. The documents listed here replace the default list at the stage that checks documents. Leave the category empty to apply to every job in that country.">
         <div className="overflow-x-auto -mx-[18px]">
           <table className="table">

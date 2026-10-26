@@ -11,8 +11,8 @@ import { toMinor } from "@/lib/money";
 import { notifyCandidate } from "@/lib/notify";
 import { fmtDateTime } from "@/lib/templates";
 
-const refresh = (placementId: string) => {
-  revalidatePath(`/placements/${placementId}`);
+const refresh = (_placementId: string) => {
+  revalidatePath("/candidates/[id]", "page");
   revalidatePath("/");
 };
 

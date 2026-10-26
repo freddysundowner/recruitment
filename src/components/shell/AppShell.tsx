@@ -5,15 +5,19 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import {
   BarChart3, Briefcase, Building2, CalendarCheck, ChevronDown, CreditCard, FileCheck2, KanbanSquare, LayoutDashboard,
-  LogOut, Mail, Menu, MessageSquareWarning, Search, Settings, ShieldCheck, Users, Wallet, X,
+  ListChecks, LogOut, Mail, Menu, MessageSquareWarning, Search, Settings, ShieldCheck, Users, Wallet, X,
 } from "lucide-react";
 
 const ICONS = {
   dashboard: LayoutDashboard, candidates: Users, pipeline: KanbanSquare, jobs: Briefcase, employers: Building2, verify: FileCheck2,
-  followup: CalendarCheck, complaints: MessageSquareWarning, messages: Mail, finance: Wallet, reports: BarChart3, billing: CreditCard, settings: Settings,
+  followup: CalendarCheck, complaints: MessageSquareWarning, messages: Mail, finance: Wallet, reports: BarChart3, billing: CreditCard, settings: Settings, todo: ListChecks,
 } as const;
 
-export type NavItem = { href: string; label: string; icon: keyof typeof ICONS; badge?: number; tone?: "warn" | "bad" };
+export type NavItem = {
+  href: string; label: string; icon: keyof typeof ICONS; badge?: number; tone?: "warn" | "bad";
+  /** Other places that belong to this item, so it stays highlighted while you are on one of them. */
+  match?: string[];
+};
 export type NavGroup = { title: string; items: NavItem[] };
 
 type Props = {
@@ -28,7 +32,8 @@ export function AppShell({ groups, brand, user, logout, children }: Props) {
   const path = usePathname();
   const [open, setOpen] = useState(false);
   const initials = user.name.split(" ").map((p) => p[0]).slice(0, 2).join("").toUpperCase();
-  const active = (href: string) => (href === "/" ? path === "/" : path === href || path.startsWith(href + "/"));
+  const on = (href: string) => (href === "/" ? path === "/" : path === href || path.startsWith(href + "/"));
+  const active = (n: NavItem) => (n.match ?? [n.href]).some(on);
 
   return (
     <div className="shell">
@@ -45,11 +50,11 @@ export function AppShell({ groups, brand, user, logout, children }: Props) {
         <nav className="pb-6">
           {groups.map((g) => (
             <div key={g.title} className="nav-group">
-              <div className="nav-title">{g.title}</div>
+              {g.title && <div className="nav-title">{g.title}</div>}
               {g.items.map((n) => {
                 const Icon = ICONS[n.icon];
                 return (
-                  <Link key={n.href} href={n.href} className="nav-link" aria-current={active(n.href) ? "page" : undefined} onClick={() => setOpen(false)}>
+                  <Link key={n.href} href={n.href} className="nav-link" aria-current={active(n) ? "page" : undefined} onClick={() => setOpen(false)}>
                     <Icon size={17} />
                     <span className="flex-1">{n.label}</span>
                     {n.badge ? <span className={`badge ${n.tone === "bad" ? "badge-bad" : "badge-warn"}`}>{n.badge}</span> : null}

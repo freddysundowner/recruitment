@@ -12,7 +12,7 @@ import { assignJob } from "@/lib/assign";
 import { CLOSE_REASONS } from "@/lib/stages";
 
 function refresh(placementId: string, candidateId?: string) {
-  revalidatePath(`/placements/${placementId}`);
+  revalidatePath("/candidates/[id]", "page");
   revalidatePath("/pipeline");
   revalidatePath("/candidates");
   if (candidateId) revalidatePath(`/candidates/${candidateId}`);

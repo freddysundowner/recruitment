@@ -94,6 +94,39 @@ describe("pipeline gates", () => {
     if (!r.ok) expect(r.error).toMatch(/Missing verified documents: Police clearance, Medical report/);
   });
 
+  it("the checklist on the page agrees with what moving would do", async () => {
+    const rows = await sandbox(demo.tenant_id, async (tx) => {
+      const out: { stage: number; ready: boolean; moved: boolean }[] = [];
+      for (const [stage, docs] of [[1, []], [2, []], [3, []], [5, []], [6, []], [6, ["Passport", "Police clearance", "Medical report"]], [7, []]] as [number, string[]][]) {
+        for (const job of ["vetted", "unvetted", null] as const) {
+          const f = await freshPlacement(tx, demo.tenant_id, { stage, job, docs, userId: demo.id });
+          const subject = await pipe.gateSubject(tx, f.placementId);
+          const [next] = await tx`SELECT * FROM pipeline_stages WHERE position = ${stage + 1}`;
+          const g = await pipe.evaluateGates(tx, subject, next as never);
+          const moved = await pipe.moveStage(tx, ctx("recruiter"), f.placementId, next.id, "", false);
+          out.push({ stage, ready: g.items.every((i) => i.done), moved: moved.ok });
+        }
+      }
+      return out;
+    });
+    for (const r of rows) expect(r.ready, `stage ${r.stage}`).toBe(r.moved);
+  });
+
+  it("the vetting and contract rules can be switched off in Settings", async () => {
+    const r = await sandbox(demo.tenant_id, async (tx) => {
+      const f = await freshPlacement(tx, demo.tenant_id, { stage: 3, job: "unvetted", userId: demo.id });
+      const before = await pipe.moveStage(tx, ctx("recruiter"), f.placementId, await f.stageId(4), "", false);
+      await tx`UPDATE tenants SET settings = settings || '{"rules": {"require_vetting": false, "contract_check": false}}'::jsonb`;
+      const after = await pipe.moveStage(tx, ctx("recruiter"), f.placementId, await f.stageId(4), "", false);
+      const g = await freshPlacement(tx, demo.tenant_id, { stage: 5, job: "vetted", userId: demo.id });
+      const noContract = await pipe.moveStage(tx, ctx("recruiter"), g.placementId, await g.stageId(6), "", false);
+      return { before, after, noContract };
+    });
+    expect(r.before.ok).toBe(false);
+    expect(r.after.ok).toBe(true);
+    expect(r.noContract.ok).toBe(true);
+  });
+
   it("only an admin can override, and only with a reason", async () => {
     const r = await sandbox(demo.tenant_id, async (tx) => {
       const f = await freshPlacement(tx, demo.tenant_id, { stage: 6, job: "vetted", userId: demo.id });

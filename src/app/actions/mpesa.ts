@@ -15,8 +15,8 @@ import { applyMpesaResult } from "@/lib/mpesa-apply";
 import { requestStk } from "@/lib/mpesa-start";
 import { assertFeature } from "@/lib/plan";
 
-const refresh = (placementId: string) => {
-  revalidatePath(`/placements/${placementId}`);
+const refresh = (_placementId: string) => {
+  revalidatePath("/candidates/[id]", "page");
   revalidatePath("/finance");
 };
 
@@ -39,7 +39,7 @@ export async function startStk(placementId: string, _: FormState, fd: FormData):
         await requestStk(tx, { tenantId: ctx.tenantId, placementId, candidateId: pl.candidate_id, phone, amountMinor: minor, createdBy: ctx.userId, actor: ctx });
       });
     } catch (e) {
-      revalidatePath(`/placements/${placementId}`);
+      revalidatePath("/candidates/[id]", "page");
       return fail(e);
     }
     refresh(placementId);

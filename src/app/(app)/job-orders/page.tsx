@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { Tabs } from "@/components/shell/Tabs";
+import { TABS } from "@/components/shell/tabs-data";
 import { Briefcase, Plus } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -15,6 +17,7 @@ export default async function JobOrders() {
     ORDER BY (j.status = 'open') DESC, j.deadline NULLS LAST, j.created_at DESC`);
   return (
     <div className="grid gap-4">
+      <Tabs items={TABS.employers} />
       <PageHeader title="Job orders" sub="What your employers have asked for, and how many places are filled.">
         {can(ctx.role, "joborders:write") && <Link href="/job-orders/new" className="btn btn-primary"><Plus size={16} /> New job order</Link>}
       </PageHeader>

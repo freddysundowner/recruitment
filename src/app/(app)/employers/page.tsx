@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { Tabs } from "@/components/shell/Tabs";
+import { TABS } from "@/components/shell/tabs-data";
 import { Building2, Plus } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -13,6 +15,7 @@ export default async function Employers() {
     FROM employers e ORDER BY e.company`);
   return (
     <div className="grid gap-4">
+      <Tabs items={TABS.employers} />
       <PageHeader title="Employers" sub="The companies that hire your workers, and whether you have vetted them.">
         {can(ctx.role, "employers:write") && <Link href="/employers/new" className="btn btn-primary"><Plus size={16} /> Add employer</Link>}
       </PageHeader>

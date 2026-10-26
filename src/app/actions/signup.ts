@@ -58,6 +58,8 @@ export async function signup(_: FormState, fd: FormData): Promise<FormState> {
       tenantId = row.id;
       const [u] = await sql`SELECT id FROM auth_lookup_user(${p.data.email})`;
       userId = u.id;
+      // A new workspace starts with the two strictest rules relaxed so it is easy to try; Settings turns them on.
+      await withTenant(tenantId, (tx) => tx`UPDATE tenants SET settings = settings || ${tx.json({ rules: { contract_check: false, require_vetting: false } })}`);
       await withTenant(tenantId, (tx) => queueMessage(tx, tenantId, {
         channel: "email", to: p.data.email, subject: `Welcome to ${p.data.agency}'s new workspace`, template: "tenant_welcome",
         body: `Hello ${p.data.name},\n\nYour agency workspace is ready, with a ${trialDays()}-day free trial.\n\nStaff sign in: ${process.env.APP_URL ?? ""}/login\nCandidates register and sign in: ${process.env.APP_URL ?? ""}/c/${p.data.slug}\n\nA good first hour: add your team, import your candidates from a spreadsheet, add an employer and a job order.`,

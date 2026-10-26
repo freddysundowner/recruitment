@@ -196,6 +196,26 @@ dialog.dlg::backdrop { background: rgba(16, 24, 40, 0.5); backdrop-filter: blur(
 .dlg-option.primary { border-color: var(--brand); background: var(--brand-soft); }
 .dlg-option .t { font-weight: 650; }
 .dlg-option .d { color: var(--muted); font-size: 12.5px; }
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); overflow-x: auto; margin-bottom: 2px; }
+.tab { display: inline-flex; align-items: center; gap: 6px; padding: 9px 14px; font-weight: 600; color: var(--muted); border-bottom: 2px solid transparent; margin-bottom: -1px; white-space: nowrap; }
+.tab:hover { color: var(--ink); }
+.tab[aria-current="page"] { color: var(--brand); border-bottom-color: var(--brand); }
+.section { padding: 0; }
+.section > summary { list-style: none; display: flex; align-items: center; gap: 10px; padding: 14px 18px; cursor: pointer; user-select: none; }
+.section > summary::-webkit-details-marker { display: none; }
+.section > summary .chev { transition: transform .15s; color: var(--muted); }
+.section[open] > summary .chev { transform: rotate(90deg); }
+.section-body { padding: 4px 18px 18px; }
+.guide { border-color: var(--brand-line); box-shadow: 0 0 0 3px var(--brand-soft); }
+.req { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-top: 1px solid var(--line); }
+.req:first-child { border-top: 0; }
+.req .tick { width: 22px; height: 22px; border-radius: 999px; display: grid; place-items: center; flex: none; border: 2px solid var(--line); color: transparent; }
+.req.done .tick { background: var(--good); border-color: var(--good); color: #fff; }
+.req.done .lbl { color: var(--muted); }
+.steps-strip { display: flex; gap: 4px; }
+.steps-strip i { flex: 1; height: 6px; border-radius: 999px; background: var(--line); }
+.steps-strip i.done { background: var(--good); }
+.steps-strip i.now { background: var(--brand); }
 .navbar { position: fixed; inset: 0 0 auto 0; height: 3px; z-index: 100; pointer-events: none; opacity: 0; background: var(--brand); transform-origin: left; transform: scaleX(0); transition: opacity .2s; }
 .navbar[data-busy="true"] { opacity: 1; animation: navgrow 12s cubic-bezier(.1,.7,.2,1) forwards; }
 @keyframes navgrow { from { transform: scaleX(.05); } to { transform: scaleX(.92); } }

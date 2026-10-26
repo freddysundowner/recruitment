@@ -348,13 +348,13 @@ export const steps = {
     body: active ? "They can sign in again." : "They are signed out and cannot sign in. Their past work stays on record.",
     actions: [{ label: "Back to the team", href: "/settings/team", primary: true }, { label: "Review recent activity", href: "/settings/activity" }],
   }),
-  settingsSaved: (what: "general" | "messages" | "security" | "fees"): Step => {
+  settingsSaved: (what: "general" | "messages" | "security" | "fees" | "rules"): Step => {
     const more: StepAction[] = [
       { label: "Add your team", href: "/settings/team" },
       { label: "Set up M-Pesa", href: "/settings/payments" },
       { label: "Turn on two-step sign-in", href: "/settings/security" },
       { label: "Review pipeline checklists", href: "/settings/pipeline" },
-    ].filter((a) => !a.href.endsWith(what));
+    ].filter((a) => !a.href.endsWith(what === "rules" ? "pipeline" : what));
     return {
       title: "Settings saved",
       body: "The change applies straight away. Here is what else is worth setting up.",

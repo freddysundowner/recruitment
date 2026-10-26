@@ -15,7 +15,7 @@ export async function MpesaPanel({ placementId, tenantId, canEdit, candidatePhon
   const suggested = d.due > 0 ? String(Math.ceil(d.due / 100)) : "";
 
   return (
-    <div id="mpesa" style={{ scrollMarginTop: 80 }} className="card">
+    <div id="mpesa" style={{ scrollMarginTop: 80 }}>
       <div className="flex items-baseline justify-between flex-wrap gap-2 mb-2">
         <div className="h2">M-Pesa</div>
         {mock && <span className="badge badge-warn">Demo mode: no money moves</span>}

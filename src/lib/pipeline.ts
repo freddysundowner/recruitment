@@ -51,6 +51,112 @@ export async function requiredDocs(tx: Sql, placementId: string, stageDefault: s
   return c ? (c.required_doc_types as string[]) : stageDefault;
 }
 
+export type GateItem = {
+  key: string;
+  label: string;
+  done: boolean;
+  /** One short line about where things stand, such as "awaiting verification". */
+  detail?: string;
+  /** Where on the candidate's page the missing piece is dealt with, such as "#documents". */
+  anchor?: string;
+  /** Or a page elsewhere in the app. */
+  href?: string;
+};
+
+export type GateSubject = {
+  candidate_id: string; tenant_id: string; job_order_id: string | null; required_doc_types: string[]; requires_payment: boolean; requires_contract: boolean;
+  requires_visa: boolean; requires_orientation: boolean; requires_arrival: boolean; id: string;
+};
+export type GateTarget = { requires_job_order: boolean; requires_vetted_employer: boolean };
+
+/** The row `evaluateGates` needs for a placement: its current stage and that stage's exit requirements. */
+export async function gateSubject(tx: Sql, placementId: string) {
+  const [p] = await tx`
+    SELECT p.*, s.position AS cur_pos, s.name AS cur_name, s.required_doc_types, s.requires_payment,
+           s.requires_contract, s.requires_visa, s.requires_orientation, s.requires_arrival, s.requires_job_order AS cur_needs_job
+    FROM placements p JOIN pipeline_stages s ON s.id = p.stage_id WHERE p.id = ${placementId}`;
+  return p as unknown as GateSubject & { stage_id: string; cur_pos: number; cur_name: string; outcome: string; payment_model: string | null };
+}
+
+/**
+ * Everything that must be true to move a placement forward into `t`, as a list the page can tick off (`items`)
+ * and as the plain sentences `moveStage` reports when something is missing (`problems`). One place decides both,
+ * so the page can never say "ready" when moving would be refused.
+ */
+export async function evaluateGates(tx: Sql, p: GateSubject, t: GateTarget): Promise<{ items: GateItem[]; problems: string[] }> {
+  const items: GateItem[] = [];
+  const problems: string[] = [];
+  // Two rules are switches in Settings: comparing the two contract copies, and only using vetted employers.
+  const [{ settings }] = await tx`SELECT settings FROM tenants WHERE id = ${p.tenant_id}`;
+  const rules = (settings?.rules ?? {}) as { contract_check?: boolean; require_vetting?: boolean };
+
+  const required = await requiredDocs(tx, p.id, p.required_doc_types);
+  if (required.length > 0 && p.required_doc_types.length > 0) {
+    const docs = await tx`
+      SELECT doc_type, status, (status = 'verified' AND (expiry_date IS NULL OR expiry_date >= current_date)) AS valid
+      FROM documents WHERE candidate_id = ${p.candidate_id} AND doc_type = ANY(${required})`;
+    const missing: string[] = [];
+    for (const r of required) {
+      const mine = docs.filter((d) => d.doc_type === r);
+      const done = mine.some((d) => d.valid);
+      if (!done) missing.push(r);
+      items.push({
+        key: `doc:${r}`, label: `${r} verified`, done, anchor: "#documents",
+        detail: done ? undefined : mine.some((d) => d.status === "pending") ? "uploaded, waiting to be checked" : mine.some((d) => d.status === "verified") ? "expired" : "not uploaded yet",
+      });
+    }
+    if (missing.length) problems.push(`Missing verified documents: ${missing.join(", ")}`);
+  }
+
+  if (p.requires_payment) {
+    const due = await balanceDue(tx, p.id);
+    items.push({ key: "fees", label: "Fees paid", done: due <= 0, anchor: "#money", detail: due > 0 ? `KES ${(due / 100).toLocaleString("en-KE")} still due` : undefined });
+    if (due > 0) problems.push(`Fees due and unpaid: ${(due / 100).toLocaleString("en-KE")}`);
+  }
+
+  if (t.requires_job_order) {
+    items.push({ key: "job", label: "Matched to a job", done: Boolean(p.job_order_id), anchor: "#placement" });
+    if (!p.job_order_id) problems.push("Assign a job order first");
+  }
+
+  if (t.requires_vetted_employer && p.job_order_id && rules.require_vetting !== false) {
+    const [e] = await tx`
+      SELECT e.id, e.vetted FROM job_orders j JOIN employers e ON e.id = j.employer_id WHERE j.id = ${p.job_order_id}`;
+    items.push({ key: "vetted", label: "Employer vetted", done: Boolean(e?.vetted), href: e ? `/employers/${e.id}#checks` : undefined, detail: e?.vetted ? undefined : "record a registration check first" });
+    if (!e?.vetted) problems.push("The employer has not been vetted");
+  }
+
+  if (p.requires_contract && rules.contract_check !== false) {
+    const c = await contractStatus(tx, p.id);
+    const both = Boolean(c.candidate && c.employer);
+    items.push({
+      key: "contract", label: "Contract copies recorded and matching", done: both && c.differences.length === 0, anchor: "#contract",
+      detail: !both ? "record the candidate's and the employer's copies" : c.differences.length ? `differ on ${c.differences.join(", ")}` : undefined,
+    });
+    if (!both) problems.push("Record both the candidate's and the employer's contract copies");
+    else if (c.differences.length) problems.push(`The two contract copies differ on: ${c.differences.join(", ")}`);
+  }
+
+  if (p.requires_visa || p.requires_orientation || p.requires_arrival) {
+    const [tr] = await tx`SELECT * FROM placement_travel WHERE placement_id = ${p.id}`;
+    const today = new Date(new Date().toDateString());
+    if (p.requires_visa) {
+      const ok = tr?.visa_status === "approved" && (!tr.visa_expiry || new Date(tr.visa_expiry) >= today);
+      items.push({ key: "visa", label: "Visa approved", done: Boolean(ok), anchor: "#travel", detail: ok ? undefined : tr?.visa_status === "approved" ? "expired" : "not approved yet" });
+      if (!ok) problems.push("The visa must be approved and not expired");
+    }
+    if (p.requires_orientation) {
+      items.push({ key: "orientation", label: "Pre-departure orientation done", done: Boolean(tr?.orientation_done_on), anchor: "#travel" });
+      if (!tr?.orientation_done_on) problems.push("Pre-departure orientation has not been completed");
+    }
+    if (p.requires_arrival) {
+      items.push({ key: "arrival", label: "Arrival confirmed", done: Boolean(tr?.arrival_confirmed_on), anchor: "#travel" });
+      if (!tr?.arrival_confirmed_on) problems.push("Arrival has not been confirmed");
+    }
+  }
+  return { items, problems };
+}
+
 /**
  * Moves a placement to another stage after checking the gates.
  * Leaving a stage can require: verified documents, fees paid, a signed matching contract, an approved visa,
@@ -77,46 +183,8 @@ export async function moveStage(
   if (!t) return { ok: false, error: "Stage not found." };
   if (t.id === p.stage_id) return { ok: false, error: "Already at that stage." };
 
-  const problems: string[] = [];
-
   // Gates only apply when moving forward.
-  if (t.position > p.cur_pos) {
-    const required = await requiredDocs(tx, placementId, p.required_doc_types as string[]);
-    if (required.length > 0 && (p.required_doc_types as string[]).length > 0) {
-      const ok = await tx`
-        SELECT DISTINCT doc_type FROM documents
-        WHERE candidate_id = ${p.candidate_id} AND status = 'verified'
-          AND (expiry_date IS NULL OR expiry_date >= current_date)
-          AND doc_type = ANY(${required})`;
-      const have = new Set(ok.map((r) => r.doc_type as string));
-      const missing = required.filter((d) => !have.has(d));
-      if (missing.length) problems.push(`Missing verified documents: ${missing.join(", ")}`);
-    }
-    if (p.requires_payment) {
-      const due = await balanceDue(tx, placementId);
-      if (due > 0) problems.push(`Fees due and unpaid: ${(due / 100).toLocaleString("en-KE")}`);
-    }
-    if (t.requires_job_order && !p.job_order_id) problems.push("Assign a job order first");
-    if (t.requires_vetted_employer && p.job_order_id) {
-      const [e] = await tx`
-        SELECT e.vetted FROM job_orders j JOIN employers e ON e.id = j.employer_id WHERE j.id = ${p.job_order_id}`;
-      if (!e?.vetted) problems.push("The employer has not been vetted");
-    }
-    if (p.requires_contract) {
-      const c = await contractStatus(tx, placementId);
-      if (!c.candidate || !c.employer) problems.push("Record both the candidate's and the employer's contract copies");
-      else if (c.differences.length) problems.push(`The two contract copies differ on: ${c.differences.join(", ")}`);
-    }
-    if (p.requires_visa || p.requires_orientation || p.requires_arrival) {
-      const [tr] = await tx`SELECT * FROM placement_travel WHERE placement_id = ${placementId}`;
-      const today = new Date(new Date().toDateString());
-      if (p.requires_visa && !(tr?.visa_status === "approved" && (!tr.visa_expiry || new Date(tr.visa_expiry) >= today))) {
-        problems.push("The visa must be approved and not expired");
-      }
-      if (p.requires_orientation && !tr?.orientation_done_on) problems.push("Pre-departure orientation has not been completed");
-      if (p.requires_arrival && !tr?.arrival_confirmed_on) problems.push("Arrival has not been confirmed");
-    }
-  }
+  const problems = t.position > p.cur_pos ? (await evaluateGates(tx, p as unknown as GateSubject, t as unknown as GateTarget)).problems : [];
 
   let overridden = false;
   if (problems.length) {

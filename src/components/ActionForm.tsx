@@ -13,6 +13,8 @@ type Props = {
   buttonClass?: string;
   resetOnSuccess?: boolean;
   confirm?: string;
+  /** Greys the button out, for a step whose requirements are not met yet. */
+  disabled?: boolean;
 };
 
 /**
@@ -20,7 +22,7 @@ type Props = {
  * It submits through a transition instead of `<form action>` so that React does not
  * wipe the fields when the server reports a validation error.
  */
-export function ActionForm({ action, children, submit, className, buttonClass = "btn btn-primary", resetOnSuccess = true, confirm }: Props) {
+export function ActionForm({ action, children, submit, className, buttonClass = "btn btn-primary", resetOnSuccess = true, confirm, disabled }: Props) {
   // Announce the suggestion as soon as the server answers. Waiting for an effect is too late when the page
   // refresh replaces this form in the same update.
   const [state, run, pending] = useActionState(async (prev: FormState, fd: FormData) => {
@@ -64,7 +66,7 @@ export function ActionForm({ action, children, submit, className, buttonClass = 
       {children}
       {submit && (
         <div>
-          <button className={buttonClass} disabled={pending}>{pending ? "Working…" : submit}</button>
+          <button className={buttonClass} disabled={pending || disabled}>{pending ? "Working…" : submit}</button>
         </div>
       )}
     </form>

@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { Tabs } from "@/components/shell/Tabs";
+import { TABS } from "@/components/shell/tabs-data";
 import { withTenant } from "@/lib/db";
 import { requireCtx } from "@/lib/session";
 import { can } from "@/lib/perms";
@@ -74,6 +76,7 @@ export default async function Reports({ searchParams }: PageProps<"/reports">) {
 
   return (
     <div className="grid gap-4">
+      <Tabs items={TABS.money} />
       <div className="flex items-end justify-between gap-3 flex-wrap">
         <h1 className="h1">Reports</h1>
         <form className="flex items-end gap-2 flex-wrap">

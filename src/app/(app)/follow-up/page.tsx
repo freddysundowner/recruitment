@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { Tabs } from "@/components/shell/Tabs";
+import { TABS } from "@/components/shell/tabs-data";
 import { withTenant } from "@/lib/db";
 import { requireCtx } from "@/lib/session";
 
@@ -24,6 +26,7 @@ export default async function FollowUp() {
   }));
   return (
     <div className="grid gap-4">
+      <Tabs items={TABS.todo} />
       <h1 className="h1">Follow-up</h1>
       <div className="card p-0 overflow-x-auto">
         <div className="p-4 pb-0 h2">Workers to check on</div>

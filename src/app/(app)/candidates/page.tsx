@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { Tabs } from "@/components/shell/Tabs";
+import { TABS } from "@/components/shell/tabs-data";
 import { Plus, Search, Upload, Users } from "lucide-react";
 import { withTenant } from "@/lib/db";
 import { requireCtx } from "@/lib/session";
@@ -28,6 +30,7 @@ export default async function Candidates({ searchParams }: PageProps<"/candidate
 
   return (
     <>
+      <Tabs items={TABS.candidates} />
       <PageHeader title="Candidates" sub={q ? `${rows.length} result${rows.length === 1 ? "" : "s"} for “${q}”` : `${rows.length} ${rows.length === 1 ? "person" : "people"} registered`}>
         {write && <Link href="/candidates/import" className="btn"><Upload size={16} /> Import CSV</Link>}
         {write && <Link href="/candidates/new" className="btn btn-primary"><Plus size={16} /> Add candidate</Link>}
