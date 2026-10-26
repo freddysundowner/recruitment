@@ -7,6 +7,8 @@ import { ActionForm } from "@/components/ActionForm";
 import { setVetted } from "@/app/actions/org";
 import { addEmployerCheck } from "@/app/actions/operations";
 import { createEmployerUser } from "@/app/actions/org";
+import { OpenOnHash } from "@/components/OpenOnHash";
+import { Section } from "@/components/ui/Section";
 
 export default async function Employer({ params }: PageProps<"/employers/[id]">) {
   const { id } = await params;
@@ -25,19 +27,13 @@ export default async function Employer({ params }: PageProps<"/employers/[id]">)
 
   return (
     <div className="grid gap-4">
+      <OpenOnHash />
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="h1">{e.company}</h1>
-          <div className="muted">{e.country} · invoices in {e.currency}</div>
+          <div className="muted">{e.country}</div>
         </div>
-        <div className="flex items-center gap-3">
-          <span className={`badge ${e.vetted ? "badge-good" : "badge-warn"}`}>{e.vetted ? "Vetted" : "Not vetted"}</span>
-          {write && (
-            <ActionForm action={setVetted.bind(null, e.id, !e.vetted)} confirm={e.vetted ? "Remove vetting? Candidates cannot move past the shortlist for this employer until it is marked as vetted again." : "Mark this employer as vetted? Make sure the registration check has passed."} submit={e.vetted ? "Remove vetting" : "Mark as vetted"} buttonClass="btn btn-sm" className="">
-              <></>
-            </ActionForm>
-          )}
-        </div>
+        {can(ctx.role, "joborders:write") && <Link href={`/job-orders/new?employer=${e.id}`} className="btn btn-primary">Add opening</Link>}
       </div>
       <div className="card grid sm:grid-cols-3 gap-3">
         <div><div className="label">Contact</div>{e.contact_name ?? "—"}</div>
@@ -45,9 +41,13 @@ export default async function Employer({ params }: PageProps<"/employers/[id]">)
         <div><div className="label">Phone</div>{e.phone ?? "—"}</div>
         {e.notes && <div className="sm:col-span-3"><div className="label">Notes</div>{e.notes}</div>}
       </div>
-      <div id="checks" style={{ scrollMarginTop: 80 }} className="card">
-        <div className="h2 mb-1">Vetting checks</div>
-        <p className="muted text-xs mb-2">An employer can be marked vetted only after a registration check has passed. Record references, past complaints and any visits too.</p>
+      <Section id="checks" title="Checks on this company (optional)" status={e.vetted ? "vetted" : checks.length ? `${checks.length} recorded` : "none"} tone={e.vetted ? "good" : undefined}>
+        <p className="muted text-xs mb-2">If you want a record of how you checked this company, add it here. Nothing is held back because of it.</p>
+        {write && (
+          <ActionForm action={setVetted.bind(null, e.id, !e.vetted)} confirm={e.vetted ? "Remove the vetted mark?" : "Mark this company as vetted?"} submit={e.vetted ? "Remove vetted mark" : "Mark as vetted"} buttonClass="btn btn-sm" className="mb-3">
+            <></>
+          </ActionForm>
+        )}
         <table className="table">
           <tbody>
             {checks.map((k) => (
@@ -70,10 +70,9 @@ export default async function Employer({ params }: PageProps<"/employers/[id]">)
             </div>
           </ActionForm>
         )}
-      </div>
-      <div id="logins" style={{ scrollMarginTop: 80 }} className="card">
-        <div className="h2 mb-1">Employer portal logins</div>
-        <p className="muted text-xs mb-2">Lets this employer review shortlisted candidates, request interviews, select or reject, send their signed contract terms and see their invoices.</p>
+      </Section>
+      <Section id="logins" title="Online access for this company (optional)" status={portalUsers.length ? `${portalUsers.length} login${portalUsers.length === 1 ? "" : "s"}` : "none"}>
+        <p className="muted text-xs mb-2">Lets this company sign in to see the recruits put forward to it, ask for an interview, and select or decline. You can do all of this for them instead.</p>
         {portalUsers.map((u) => <div key={u.email} className="flex justify-between border-b border-[var(--line)] py-1.5 last:border-0"><span>{u.name} <span className="muted text-xs">{u.email}</span></span><span className="badge">{u.status}</span></div>)}
         {portalUsers.length === 0 && <p className="muted">No logins yet.</p>}
         {write && (
@@ -85,22 +84,21 @@ export default async function Employer({ params }: PageProps<"/employers/[id]">)
             </div>
           </ActionForm>
         )}
-      </div>
+      </Section>
       <div className="card p-0 overflow-x-auto">
-        <div className="p-4 pb-0 h2">Job orders</div>
+        <div className="p-4 pb-0 h2">Openings</div>
         <table className="table">
-          <thead><tr><th>Title</th><th>Country</th><th>Filled</th><th>Costs paid by</th><th>Status</th></tr></thead>
+          <thead><tr><th>Role</th><th>Country</th><th>Filled</th><th>Status</th></tr></thead>
           <tbody>
             {jobs.map((j) => (
               <tr key={j.id}>
                 <td><Link className="link" href={`/job-orders/${j.id}`}>{j.title}</Link></td>
                 <td>{j.country}</td>
                 <td>{Number(j.filled)} / {j.quantity}</td>
-                <td>{j.payment_model === "employer_paid" ? "Employer" : "Candidate"}</td>
                 <td><span className="badge">{j.status}</span></td>
               </tr>
             ))}
-            {jobs.length === 0 && <tr><td colSpan={5} className="muted">No job orders yet.</td></tr>}
+            {jobs.length === 0 && <tr><td colSpan={4} className="muted">No openings yet.</td></tr>}
           </tbody>
         </table>
       </div>

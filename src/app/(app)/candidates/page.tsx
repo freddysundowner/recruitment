@@ -28,9 +28,9 @@ export default async function Candidates({ searchParams }: PageProps<"/candidate
 
   return (
     <>
-      <PageHeader title="Candidates" sub={q ? `${rows.length} result${rows.length === 1 ? "" : "s"} for “${q}”` : `${rows.length} ${rows.length === 1 ? "person" : "people"} registered`}>
+      <PageHeader title="Recruits" sub={q ? `${rows.length} result${rows.length === 1 ? "" : "s"} for “${q}”` : `${rows.length} ${rows.length === 1 ? "person" : "people"} registered`}>
         {write && <Link href="/candidates/import" className="btn"><Upload size={16} /> Import CSV</Link>}
-        {write && <Link href="/candidates/new" className="btn btn-primary"><Plus size={16} /> Add candidate</Link>}
+        {write && <Link href="/candidates/new" className="btn btn-primary"><Plus size={16} /> Add recruit</Link>}
       </PageHeader>
 
       <form className="flex gap-2 max-w-lg">
@@ -48,7 +48,7 @@ export default async function Candidates({ searchParams }: PageProps<"/candidate
             {q ? "Check the spelling, or search by phone number." : "Add your first candidate, or import your existing records from a spreadsheet."}
             {!q && write && (
               <div className="flex gap-2 justify-center mt-3">
-                <Link href="/candidates/new" className="btn btn-primary"><Plus size={16} /> Add candidate</Link>
+                <Link href="/candidates/new" className="btn btn-primary"><Plus size={16} /> Add recruit</Link>
                 <Link href="/candidates/import" className="btn"><Upload size={16} /> Import CSV</Link>
               </div>
             )}

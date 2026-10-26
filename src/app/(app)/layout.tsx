@@ -46,10 +46,10 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
     {
       title: "Recruit",
       items: [
-        { href: "/candidates", label: "Candidates", icon: "candidates" },
+        { href: "/candidates", label: "Recruits", icon: "candidates" },
         { href: "/pipeline", label: "Pipeline", icon: "pipeline" },
-        { href: "/job-orders", label: "Job orders", icon: "jobs" },
-        { href: "/employers", label: "Employers", icon: "employers" },
+        { href: "/job-orders", label: "Openings", icon: "jobs" },
+        { href: "/employers", label: "Companies", icon: "employers" },
         ...(can(ctx.role, "documents:verify") ? [{ href: "/verify", label: "Verify documents", icon: "verify" as const, badge: Number(info.n.docs), tone: "warn" as const }] : []),
       ],
     },

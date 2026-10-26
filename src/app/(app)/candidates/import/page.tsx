@@ -8,7 +8,7 @@ export default async function ImportCandidates() {
   await requirePageCan("candidates:write");
   return (
     <div className="grid gap-4 max-w-2xl">
-      <PageHeader title="Import candidates" sub="Bring in a spreadsheet of people in one go."><Link href="/candidates" className="btn btn-ghost">Back to candidates</Link></PageHeader>
+      <PageHeader title="Import recruits" sub="Bring in a spreadsheet of people in one go."><Link href="/candidates" className="btn btn-ghost">Back to candidates</Link></PageHeader>
       <div className="card grid gap-3">
         <p>
           Bring in records from your books or a spreadsheet. Save it as CSV with a header row. Required columns:{" "}

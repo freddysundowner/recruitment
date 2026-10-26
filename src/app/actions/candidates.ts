@@ -28,6 +28,7 @@ const CandidateSchema = z.object({
   county: z.string().nullable(),
   skills: z.string().nullable(),
   experience: z.string().nullable(),
+  experience_years: z.coerce.number().int().min(0, "Years of experience cannot be negative").max(60, "Check the years of experience").nullable(),
   preferred_countries: z.string().nullable(),
 });
 
@@ -43,6 +44,7 @@ function parse(fd: FormData) {
     county: field(fd, "county"),
     skills: field(fd, "skills"),
     experience: field(fd, "experience"),
+    experience_years: field(fd, "experience_years"),
     preferred_countries: field(fd, "preferred_countries"),
   });
 }
@@ -69,9 +71,9 @@ export async function createCandidate(_: FormState, fd: FormData): Promise<FormS
         if (dupPhone[0]) throw new Error(`Already registered: ${dupPhone[0].first_name} ${dupPhone[0].last_name} has this phone number.`);
         const [row] = await tx`
           INSERT INTO candidates (tenant_id, first_name, last_name, id_number_enc, id_number_idx, dob, gender, phone, phone_norm, email, county,
-                                  skills, experience, preferred_countries, consent_at, created_by)
+                                  skills, experience, experience_years, preferred_countries, consent_at, created_by)
           VALUES (${ctx.tenantId}, ${c.first_name}, ${c.last_name}, ${sealId(c.id_number).enc}, ${sealId(c.id_number).idx}, ${c.dob}, ${c.gender}, ${c.phone}, ${phoneNorm},
-                  ${c.email}, ${c.county}, ${c.skills ?? ""}, ${c.experience ?? ""}, ${c.preferred_countries ?? ""},
+                  ${c.email}, ${c.county}, ${c.skills ?? ""}, ${c.experience ?? ""}, ${c.experience_years}, ${c.preferred_countries ?? ""},
                   now(), ${ctx.userId})
           RETURNING id`;
         // Every candidate starts in the pipeline at the first stage.
@@ -112,7 +114,7 @@ export async function updateCandidate(id: string, _: FormState, fd: FormData): P
         await tx`
           UPDATE candidates SET first_name = ${c.first_name}, last_name = ${c.last_name}, id_number_enc = ${sealId(c.id_number).enc}, id_number_idx = ${sealId(c.id_number).idx},
             dob = ${c.dob}, gender = ${c.gender}, phone = ${c.phone}, phone_norm = ${phoneNorm}, email = ${c.email}, county = ${c.county},
-            skills = ${c.skills ?? ""}, experience = ${c.experience ?? ""}, preferred_countries = ${c.preferred_countries ?? ""}
+            skills = ${c.skills ?? ""}, experience = ${c.experience ?? ""}, experience_years = ${c.experience_years}, preferred_countries = ${c.preferred_countries ?? ""}
           WHERE id = ${id}`;
         await audit(tx, ctx, "candidate.update", "candidate", id);
       });

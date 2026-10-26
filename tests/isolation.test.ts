@@ -114,6 +114,7 @@ describe("pipeline gates", () => {
 
   it("the vetting and contract rules can be switched off in Settings", async () => {
     const r = await sandbox(demo.tenant_id, async (tx) => {
+      await tx`UPDATE tenants SET settings = settings || '{"rules": {"require_vetting": true, "contract_check": true}}'::jsonb`;
       const f = await freshPlacement(tx, demo.tenant_id, { stage: 2, job: "unvetted", userId: demo.id });
       const before = await pipe.moveStage(tx, ctx("recruiter"), f.placementId, await f.stageId(3), "", false);
       await tx`UPDATE tenants SET settings = settings || '{"rules": {"require_vetting": false, "contract_check": false}}'::jsonb`;
@@ -149,7 +150,7 @@ describe("pipeline gates", () => {
       return pipe.moveStage(tx, ctx("recruiter"), f.placementId, await f.stageId(2), "", false);
     });
     expect(r.ok).toBe(false);
-    if (!r.ok) expect(r.error).toMatch(/job order/);
+    if (!r.ok) expect(r.error).toMatch(/opening/);
   });
 
   it("blocks leaving Getting ready while fees that are due are unpaid, then allows it once paid", async () => {
@@ -178,6 +179,7 @@ describe("pipeline gates", () => {
 
   it("blocks entering Selected when the employer is not vetted", async () => {
     const r = await sandbox(demo.tenant_id, async (tx) => {
+      await tx`UPDATE tenants SET settings = settings || '{"rules": {"require_vetting": true}}'::jsonb`;
       const f = await freshPlacement(tx, demo.tenant_id, { stage: 2, job: "unvetted" });
       return pipe.moveStage(tx, ctx("recruiter"), f.placementId, await f.stageId(3), "", false);
     });

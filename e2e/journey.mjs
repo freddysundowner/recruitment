@@ -88,7 +88,7 @@ let employerUrl;
 await step("add an employer and see what next", async () => {
   await go(`${BASE}/employers/new`);
   await fill("#company", "Gulf Care Services"); await fill("#country", "Qatar"); await fill("#contact_name", "Layla"); await fill("#email", "jobs@gulfcare.example");
-  await page.getByRole("button", { name: "Save employer" }).click();
+  await page.getByRole("button", { name: "Save company" }).click();
   await expectNext("Employer added");
   await closeNext();
   employerUrl = page.url().split("?")[0];
@@ -109,7 +109,7 @@ await step("create a job order", async () => {
   await go(`${BASE}/job-orders/new`);
   await page.locator("select[name=employer_id]").selectOption({ index: 0 });
   await fill("#title", "Registered nurse"); await fill("#country", "Qatar"); await fill("#quantity", "3");
-  await page.getByRole("button", { name: "Save job order" }).click();
+  await page.getByRole("button", { name: "Save opening" }).click();
   await expectNext("Job order created"); await closeNext();
 });
 
@@ -118,7 +118,7 @@ await step("register a candidate", async () => {
   await go(`${BASE}/candidates/new`);
   await fill("#first_name", "Wanjiru"); await fill("#last_name", "Kariuki"); await fill("#phone", "0712 345 678"); await fill("#county", "Nyeri");
   await page.locator("input[name=consent]").check();
-  await page.getByRole("button", { name: "Register candidate" }).click();
+  await page.getByRole("button", { name: "Register recruit" }).click();
   await expectNext("Candidate registered"); await closeNext();
   await page.waitForURL(/\/candidates\/[0-9a-f-]{36}/);
   candUrl = page.url().split("?")[0];
@@ -156,7 +156,7 @@ await step("match the candidate to the job from the panel", async () => {
   await go(candUrl);
   const sel = page.locator(".guide select[name=job_order_id]");
   await sel.selectOption({ index: 1 });
-  await page.locator(".guide").getByRole("button", { name: "Match", exact: true }).click();
+  await page.locator(".guide").getByRole("button", { name: "Assign", exact: true }).click();
   await expectNext("Job order assigned"); await closeNext();
 });
 
@@ -186,7 +186,7 @@ await step("contract: record both copies and move on", async () => {
 
 await step("getting ready: Move is locked until documents, visa and orientation are done", async () => {
   await go(candUrl);
-  await page.getByText("Police clearance verified").waitFor();
+  await page.getByText("Police clearance verified").first().waitFor();
   if (!(await page.getByRole("button", { name: "Move to Abroad" }).isDisabled())) throw new Error("move button should be disabled");
   await upload("Police clearance"); await upload("Medical report"); await verifyAll();
   await go(candUrl);

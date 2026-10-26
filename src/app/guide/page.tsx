@@ -18,8 +18,8 @@ export const metadata: Metadata = {
 const TOC: [string, string][] = [
   ["quick-start", "Start here"],
   ["set-up", "1. Set up"],
-  ["employers", "2. Employers and jobs"],
-  ["candidates", "3. Candidates"],
+  ["employers", "2. Companies and openings"],
+  ["candidates", "3. Recruits"],
   ["stages", "4. The five steps"],
   ["money", "5. Money"],
   ["after", "6. After they travel"],
@@ -30,7 +30,7 @@ const TOC: [string, string][] = [
 
 const STAGES: [string, string][] = [
   ["New", "Write down who they are. Tick that they agree to you keeping their details. Check their ID, skills and work history."],
-  ["With employer", "Match them to a job. Now the employer can see them. The employer talks to them and decides."],
+  ["With employer", "Assign them to an opening. They must meet what the opening asks for. Now the company can see them. The company talks to them and decides."],
   ["Selected", "The employer chose them. Save the contract the worker has and the one the employer has. They must say the same thing."],
   ["Getting ready", "Upload and check the passport, police clearance and medical report. Fees must be paid. The visa must be approved and orientation done."],
   ["Abroad", "The worker has travelled. The system sets reminders for you to call them from time to time. Answer any complaint."],
@@ -106,32 +106,30 @@ export default async function Guide() {
             <Card title="Password">Open your name at the top (or More, then Security, on a phone) to change your password.</Card>
           </div>
 
-          <H2 id="employers">2. Employers and jobs</H2>
+          <H2 id="employers">2. Companies and openings</H2>
           <div className="grid lg:grid-cols-2 gap-4">
-            <Card title="Add an employer">
+            <Card title="Add a company">
               <Steps>
-                <li>Go to <b>Employers</b>. Press <b>Add employer</b>.</li>
-                <li>Write the company name, country and contact person.</li>
-                <li>On the employer page, write down a <b>check</b>. For example, you confirmed the company is real.</li>
-                <li>When the check is good, press <b>Mark as vetted</b>.</li>
+                <li>Go to <b>Companies</b>. Press <b>Add company</b>.</li>
+                <li>Write the company name and country. Add a contact person and phone if you have them.</li>
               </Steps>
             </Card>
-            <Card title="Add a job">
+            <Card title="Add an opening">
               <Steps>
-                <li>Go to <b>Job orders</b>. Press <b>New job order</b>.</li>
-                <li>Pick the employer. Write the job, the country and how many workers.</li>
-                <li>Choose <b>who pays the costs</b>. Either the employer pays you back later, or the candidate pays you.</li>
+                <li>Go to <b>Openings</b>. Press <b>New opening</b>.</li>
+                <li>Pick the company. Write the job, the country and how many workers.</li>
+                <li>Say what a recruit must meet: which papers, the age, the gender, the years of work, and anything else.</li>
               </Steps>
             </Card>
           </div>
-          <Tip>Employers can have their own login. They can look at candidates and ask you for more workers.</Tip>
+          <Tip>An opening is a list of what the company wants. A recruit can only be put forward when they meet it.</Tip>
 
-          <H2 id="candidates">3. Candidates</H2>
+          <H2 id="candidates">3. Recruits</H2>
           <div className="grid lg:grid-cols-2 gap-4">
-            <Card title="Add a candidate">
+            <Card title="Add a recruit">
               <Steps>
-                <li>Go to <b>Candidates</b>.</li>
-                <li>Press <b>Add candidate</b> for one person. Press <b>Import CSV</b> for many people.</li>
+                <li>Go to <b>Recruits</b>.</li>
+                <li>Press <b>Add recruit</b> for one person. Press <b>Import CSV</b> for many people.</li>
                 <li>Tick the box that says they agree to you keeping their details.</li>
               </Steps>
               <p className="mt-3">Candidates can also sign up by themselves with your link.</p>

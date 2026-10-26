@@ -7,6 +7,7 @@ import { z } from "zod";
 import { withTenant } from "@/lib/db";
 import { requireCan } from "@/lib/session";
 import { audit } from "@/lib/audit";
+import { readOpening } from "@/lib/openings";
 import { steps } from "@/lib/next-steps";
 import { fail, field, type FormState } from "@/lib/form";
 import { toMinor } from "@/lib/money";
@@ -93,23 +94,18 @@ export async function createJobOrder(_: FormState, fd: FormData): Promise<FormSt
   try {
     const ctx = await requireCan("joborders:write");
     const employerId = field(fd, "employer_id");
-    const title = field(fd, "title");
-    const country = field(fd, "country");
-    const quantity = Number(field(fd, "quantity") ?? 0);
-    const model = field(fd, "payment_model");
-    if (!employerId || !title || !country) return { error: "Employer, title and country are required." };
-    if (!Number.isInteger(quantity) || quantity < 1) return { error: "Quantity must be at least 1." };
-    if (model !== "employer_paid" && model !== "candidate_paid") return { error: "Choose who pays the costs." };
-    const fee = toMinor(field(fd, "fee") ?? "0") ?? 0;
+    if (!employerId) return { error: "Choose the company." };
+    const o = readOpening(fd);
+    if (typeof o === "string") return { error: o };
     let id: string;
     try {
       id = await withTenant(ctx.tenantId, async (tx) => {
         const [r] = await tx`
-          INSERT INTO job_orders (tenant_id, employer_id, title, country, category, quantity, salary, terms, deadline, payment_model, placement_fee_minor, fee_currency)
-          VALUES (${ctx.tenantId}, ${employerId}, ${title}, ${country}, ${field(fd, "category") ?? ""}, ${quantity}, ${field(fd, "salary") ?? ""}, ${field(fd, "terms") ?? ""},
-                  ${field(fd, "deadline")}, ${model}, ${fee}, ${field(fd, "fee_currency") ?? "USD"})
+          INSERT INTO job_orders (tenant_id, employer_id, title, country, category, quantity, salary, payment_model, required_doc_types, min_age, max_age, gender, min_experience_years, other_requirements)
+          VALUES (${ctx.tenantId}, ${employerId}, ${o.title}, ${o.country}, ${o.category}, ${o.quantity}, ${o.salary}, 'employer_paid',
+                  ${o.required_doc_types}, ${o.min_age}, ${o.max_age}, ${o.gender}, ${o.min_experience_years}, ${o.other_requirements})
           RETURNING id`;
-        await audit(tx, ctx, "joborder.create", "job_order", r.id, { title, quantity });
+        await audit(tx, ctx, "joborder.create", "job_order", r.id, { title: o.title, quantity: o.quantity });
         return r.id as string;
       });
     } catch (err) {
@@ -117,6 +113,33 @@ export async function createJobOrder(_: FormState, fd: FormData): Promise<FormSt
     }
     revalidatePath("/job-orders");
     redirect(`/job-orders/${id}?next=job_order_created&ref=${id}`);
+  } catch (e) {
+    unstable_rethrow(e);
+    return fail(e);
+  }
+}
+
+export async function updateJobOrder(id: string, _: FormState, fd: FormData): Promise<FormState> {
+  try {
+    const ctx = await requireCan("joborders:write");
+    const o = readOpening(fd);
+    if (typeof o === "string") return { error: o };
+    try {
+      await withTenant(ctx.tenantId, async (tx) => {
+        await tx`
+          UPDATE job_orders SET title = ${o.title}, country = ${o.country}, quantity = ${o.quantity}, salary = ${o.salary},
+            required_doc_types = ${o.required_doc_types}, min_age = ${o.min_age}, max_age = ${o.max_age}, gender = ${o.gender},
+            min_experience_years = ${o.min_experience_years}, other_requirements = ${o.other_requirements}
+          WHERE id = ${id}`;
+        await audit(tx, ctx, "joborder.update", "job_order", id, { title: o.title });
+      });
+    } catch (err) {
+      return fail(err);
+    }
+    revalidatePath("/job-orders");
+    revalidatePath(`/job-orders/${id}`);
+    revalidatePath("/candidates/[id]", "page");
+    return { ok: "Saved", next: steps.openingSaved(id) };
   } catch (e) {
     unstable_rethrow(e);
     return fail(e);

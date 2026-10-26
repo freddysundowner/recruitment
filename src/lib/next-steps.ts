@@ -89,6 +89,11 @@ export const steps = {
       { label: "Open the job order", href: `/job-orders/${id}` },
     ],
   }),
+  openingSaved: (id: string): Step => ({
+    title: "Opening saved",
+    body: "Recruits are checked against the new requirements.",
+    actions: [{ label: "Assign recruits", href: `/job-orders/${id}`, primary: true }, { label: "Back to openings", href: "/job-orders" }],
+  }),
   jobOrderApproved: (id: string): Step => ({
     title: "Job order is open",
     body: "Candidates can now be matched to it.",

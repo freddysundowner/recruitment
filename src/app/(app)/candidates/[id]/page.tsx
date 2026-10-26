@@ -6,6 +6,8 @@ import { can } from "@/lib/perms";
 import { decrypt, mask } from "@/lib/crypto";
 import { loadGuide } from "@/lib/guide";
 import { CLOSE_REASONS, DOC_TYPES } from "@/lib/stages";
+import { placementDocItems, placementFit } from "@/lib/requirements";
+import { ReqRow } from "@/components/placement/ReqRow";
 import { ActionForm } from "@/components/ActionForm";
 import { CandidateFields } from "@/components/CandidateFields";
 import { OpenOnHash } from "@/components/OpenOnHash";
@@ -66,6 +68,8 @@ export default async function Candidate({ params }: PageProps<"/candidates/[id]"
   const guide = live ? await loadGuide(ctx.tenantId, live.id) : null;
   const focus = guide ? guide.items.filter((i) => !i.done && i.anchor).map((i) => i.anchor as string) : [];
   const pos = guide?.cur.position ?? 0;
+  const reqItems = live?.title ? await withTenant(ctx.tenantId, async (tx) => [...(await placementFit(tx, live.id)), ...(await placementDocItems(tx, live.id))]) : [];
+  const reqMet = reqItems.filter((i) => i.done).length;
 
   const pending = docs.filter((d) => d.status === "pending").length;
   const verified = docs.filter((d) => d.status === "verified").length;
@@ -86,16 +90,20 @@ export default async function Candidate({ params }: PageProps<"/candidates/[id]"
             {live?.title && (
               <div className="muted mt-0.5">
                 {live.title} · {live.company} · {live.country}
-                {live.payment_model && <span className="badge ml-2">{live.payment_model === "employer_paid" ? "Employer pays costs" : "Candidate pays costs"}</span>}
-                {live.company && !live.vetted && <span className="badge badge-warn ml-2">employer not vetted</span>}
               </div>
             )}
           </div>
         </div>
-        <Link href="/candidates" className="btn btn-ghost">Back to candidates</Link>
+        <Link href="/candidates" className="btn btn-ghost">Back to recruits</Link>
       </div>
 
       <GuidedPanel candidateId={c.id} guide={guide} canMove={move} jobs={jobs as never} />
+
+      {reqItems.length > 0 && live && (
+        <Section id="requirements" title={`What ${live.title} needs`} status={`${reqMet} of ${reqItems.length} met`} tone={reqMet === reqItems.length ? "good" : "warn"} open={reqMet < reqItems.length}>
+          <ul>{reqItems.map((i) => <ReqRow key={i.key} item={i} placementId={live.id} canEdit={move} />)}</ul>
+        </Section>
+      )}
 
       <Section id="documents" title="Documents" status={docs.length === 0 ? "none yet" : pending ? `${pending} waiting to be checked` : `${verified} verified`} tone={pending ? "warn" : verified ? "good" : undefined} open={focus.includes("#documents") || pos <= 2}>
         <div className="overflow-x-auto">

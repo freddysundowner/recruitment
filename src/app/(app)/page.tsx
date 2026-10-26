@@ -96,12 +96,11 @@ export default async function Dashboard() {
 
   const checklist = [
     { done: n(setup.staff) > 1, label: "Add your team", sub: "Recruiters, documentation and finance staff", href: "/settings/team", show: admin },
-    { done: n(setup.employers) > 0, label: "Add an employer", sub: "The company that will hire your workers", href: "/employers/new", show: true },
-    { done: n(setup.vetted) > 0, label: "Vet an employer", sub: "Record a registration check, then mark them vetted", href: "/employers", show: true },
-    { done: n(setup.jobs) > 0, label: "Create a job order", sub: "Roles, how many workers, who pays the costs", href: "/job-orders/new", show: true },
-    { done: n(setup.candidates) > 0, label: "Add or import candidates", sub: "One at a time, or a whole spreadsheet at once", href: "/candidates/import", show: true },
-    { done: n(setup.matched) > 0, label: "Match a candidate to a job", sub: "Open a candidate and choose a job order", href: "/candidates", show: true },
-    { done: n(setup.advanced) > 0, label: "Take a candidate through the pipeline", sub: "Match them to a job, record the contract, then get them ready to travel", href: "/pipeline", show: true },
+    { done: n(setup.employers) > 0, label: "Add a company", sub: "A company that needs workers", href: "/employers/new", show: true },
+    { done: n(setup.jobs) > 0, label: "Add an opening", sub: "The job, how many workers, and what a recruit must meet", href: "/job-orders/new", show: true },
+    { done: n(setup.candidates) > 0, label: "Add or import recruits", sub: "One at a time, or a whole spreadsheet at once", href: "/candidates/import", show: true },
+    { done: n(setup.matched) > 0, label: "Assign a recruit to an opening", sub: "Open the opening and press Assign next to a recruit", href: "/job-orders", show: true },
+    { done: n(setup.advanced) > 0, label: "Take a recruit through the pipeline", sub: "Put them forward, record the contract, then get them ready to travel", href: "/pipeline", show: true },
     { done: n(setup.mpesa) > 0, label: "Set up M-Pesa collections", sub: "So candidates can pay fees from their phone", href: "/settings/payments", show: admin && access.features.mpesa },
     { done: n(setup.portal_signups) > 0, label: "Share your candidate page", sub: "Candidates register and apply from their phones", href: "/settings/general", show: admin && access.features.candidate_portal },
   ].filter((i) => i.show);
@@ -110,9 +109,9 @@ export default async function Dashboard() {
   const attention = [
     { n: n(c.docs_pending), label: "documents waiting to be verified", href: "/verify", Icon: FileClock, show: can(ctx.role, "documents:verify") },
     { n: n(c.applications), label: "online applications to review", href: "/job-orders", Icon: UserPlus, show: true },
-    { n: n(c.pending_jobs), label: "employer requests to approve", href: "/job-orders", Icon: Briefcase, show: can(ctx.role, "joborders:write") },
+    { n: n(c.pending_jobs), label: "company requests to approve", href: "/job-orders", Icon: Briefcase, show: can(ctx.role, "joborders:write") },
     { n: n(c.docs_expiring), label: "documents expiring within 60 days", href: "/candidates", Icon: AlertTriangle, show: true },
-    { n: n(c.fees_overdue), label: "candidates with fees overdue", href: "/finance", Icon: Wallet, show: showMoney },
+    { n: n(c.fees_overdue), label: "recruits with fees overdue", href: "/finance", Icon: Wallet, show: showMoney },
     { n: n(c.checkins_overdue), label: "overdue follow-up check-ins", href: "/follow-up", Icon: CalendarClock, show: true },
     { n: n(c.complaints), label: "open complaints", href: "/complaints", Icon: MessageSquareWarning, show: true },
     { n: n(c.failed_messages), label: "messages that failed to send", href: "/messages", Icon: AlertTriangle, show: ctx.role !== "finance" },
@@ -125,8 +124,8 @@ export default async function Dashboard() {
     <>
       <PageHeader title={`Welcome back, ${ctx.name.split(" ")[0]}`} sub={n(setup.sample) > 0 ? "You are looking at sample data. Remove it any time." : "Here is where your agency stands today."}>
         {n(setup.sample) > 0 && admin && <Link href="/getting-started" className="btn btn-ghost">Manage sample data</Link>}
-        {can(ctx.role, "candidates:write") && <Link href="/candidates/new" className="btn btn-primary"><Plus size={16} /> Add candidate</Link>}
-        {can(ctx.role, "joborders:write") && <Link href="/job-orders/new" className="btn"><Briefcase size={16} /> New job order</Link>}
+        {can(ctx.role, "candidates:write") && <Link href="/candidates/new" className="btn btn-primary"><Plus size={16} /> Add recruit</Link>}
+        {can(ctx.role, "joborders:write") && <Link href="/job-orders/new" className="btn"><Briefcase size={16} /> New opening</Link>}
       </PageHeader>
 
       {checklist.length > 0 && doneCount < checklist.length && (

@@ -3,7 +3,7 @@ import { ArrowRight, Check } from "lucide-react";
 import type { GateItem } from "@/lib/pipeline";
 import type { Guide } from "@/lib/guide";
 import { ActionForm } from "@/components/ActionForm";
-import { assignJobOrder, moveStageAction, reopenCandidate } from "@/app/actions/placements";
+import { assignJobOrder, moveStageAction, reopenCandidate, setRequirement } from "@/app/actions/placements";
 
 type Job = { id: string; title: string; company: string; country: string; quantity: number; filled: number; vetted: boolean };
 
@@ -34,14 +34,14 @@ export function GuidedPanel({ candidateId, guide, canMove, jobs }: {
   const needsJobSoon = !placement.job_order_id && !items.some((i) => i.key === "job");
 
   const assign = (
-    <ActionForm action={assignJobOrder.bind(null, placementId)} submit="Match" className="flex flex-wrap items-end gap-2 mt-2" buttonClass="btn btn-sm btn-primary">
+    <ActionForm action={assignJobOrder.bind(null, placementId)} submit="Assign" className="flex flex-wrap items-end gap-2 mt-2" buttonClass="btn btn-sm btn-primary">
       <div className="min-w-56 flex-1">
-        <label className="label sr-only" htmlFor="job_order_id">Job order</label>
+        <label className="label sr-only" htmlFor="job_order_id">Opening</label>
         <select id="job_order_id" name="job_order_id" className="select" required defaultValue="">
-          <option value="" disabled>Choose a job order…</option>
+          <option value="" disabled>Choose an opening…</option>
           {jobs.map((j) => (
             <option key={j.id} value={j.id} disabled={j.filled >= j.quantity}>
-              {j.title} · {j.company} ({j.filled}/{j.quantity}){j.vetted ? "" : " · not vetted"}
+              {j.title} · {j.company} ({j.filled}/{j.quantity})
             </option>
           ))}
         </select>
@@ -55,9 +55,12 @@ export function GuidedPanel({ candidateId, guide, canMove, jobs }: {
       <div className="flex-1 min-w-0">
         <div className="lbl font-semibold">{i.label}</div>
         {i.detail && <div className="muted text-xs">{i.detail}</div>}
-        {i.key === "job" && !i.done && canMove && (jobs.length > 0 ? assign : <div className="muted text-xs mt-1">No open job orders yet. <Link className="link" href="/job-orders/new">Create one</Link></div>)}
+        {i.key === "job" && !i.done && canMove && (jobs.length > 0 ? assign : <div className="muted text-xs mt-1">No openings yet. <Link className="link" href="/job-orders/new">Add one</Link></div>)}
       </div>
-      {!i.done && i.key !== "job" && (i.href || i.anchor) && (
+      {i.manual && canMove && (
+        <ActionForm action={setRequirement.bind(null, placementId, i.manual.text, !i.done)} submit={i.done ? "Undo" : "Mark as met"} buttonClass="btn btn-sm" className="inline"><></></ActionForm>
+      )}
+      {!i.done && i.key !== "job" && !i.manual && (i.href || i.anchor) && (
         <Link className="btn btn-sm" href={i.href ?? i.anchor!}>Do this <ArrowRight size={14} /></Link>
       )}
     </li>
@@ -79,14 +82,14 @@ export function GuidedPanel({ candidateId, guide, canMove, jobs }: {
           {ready && items.length === 0 && <p className="muted">Nothing is holding them back.</p>}
           {needsJobSoon && canMove && jobs.length > 0 && (
             <div className="mt-2 pt-2 border-t border-[var(--line)]">
-              <div className="font-semibold">Match them to a job <span className="muted font-normal">(needed before the employer sees them)</span></div>
+              <div className="font-semibold">Assign them to an opening <span className="muted font-normal">(needed before the company sees them)</span></div>
               {assign}
             </div>
           )}
           {canMove && (
             <ActionForm
               action={moveStageAction.bind(null, placementId)}
-              confirm={`Move this candidate to ${next.name}? The candidate and the employer may be messaged automatically.`}
+              confirm={`Move this recruit to ${next.name}? The recruit and the company may be messaged automatically.`}
               submit={`Move to ${next.name}`}
               className="mt-3"
               buttonClass="btn btn-primary btn-lg"

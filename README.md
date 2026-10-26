@@ -98,7 +98,7 @@ With the app running (`npm run dev`) and the demo data seeded:
 npm run e2e
 ```
 
-`e2e/journey.mjs` drives a real browser through a brand-new agency: sign-up, employer and vetting, job order, a candidate through all five stages with documents, contract and visa, money, an employer portal login, every sidebar and settings page, and a candidate registering. `e2e/employer-decision.mjs` has an employer ask for an interview and select a candidate. `e2e/platform-and-mobile.mjs` opens the platform console and checks the main pages at phone width. Both need Chromium from a Playwright install (`npx playwright-core install chromium`) and create a fresh agency each run.
+`e2e/journey.mjs` drives a real browser through a brand-new agency: sign-up, employer and vetting, job order, a candidate through all five stages with documents, contract and visa, money, an employer portal login, every sidebar and settings page, and a candidate registering. `e2e/openings.mjs` creates an opening with requirements and checks a recruit against it. `e2e/employer-decision.mjs` has an employer ask for an interview and select a candidate. `e2e/platform-and-mobile.mjs` opens the platform console and checks the main pages at phone width. Both need Chromium from a Playwright install (`npx playwright-core install chromium`) and create a fresh agency each run.
 
 ## Settings reference
 

@@ -32,7 +32,7 @@ await step("set up an agency with a vetted employer, a job and a candidate put f
   await dialog.getByText("What would you like to do next?").waitFor(); await closeNext();
   await go(`${BASE}/employers/new`);
   await page.fill("#company", "Decide Co"); await page.fill("#country", "Qatar"); await page.fill("#contact_name", "Eli");
-  await page.getByRole("button", { name: "Save employer" }).click(); await dialog.getByText("What would you like to do next?").waitFor(); await closeNext();
+  await page.getByRole("button", { name: "Save company" }).click(); await dialog.getByText("What would you like to do next?").waitFor(); await closeNext();
   const employerUrl = page.url().split("?")[0];
   await go(`${employerUrl}#checks`);
   await page.locator("select[name=kind]").selectOption("registration"); await page.locator("select[name=result]").selectOption("ok");
@@ -43,13 +43,13 @@ await step("set up an agency with a vetted employer, a job and a candidate put f
   await page.getByRole("button", { name: "Create login" }).click(); await dialog.getByText("What would you like to do next?").waitFor(); await closeNext();
   await go(`${BASE}/job-orders/new`);
   await page.locator("select[name=employer_id]").selectOption({ index: 0 }); await page.fill("#title", "Cook"); await page.fill("#country", "Qatar"); await page.fill("#quantity", "2");
-  await page.getByRole("button", { name: "Save job order" }).click(); await dialog.getByText("What would you like to do next?").waitFor(); await closeNext();
+  await page.getByRole("button", { name: "Save opening" }).click(); await dialog.getByText("What would you like to do next?").waitFor(); await closeNext();
   await go(`${BASE}/candidates/new`);
   await page.fill("#first_name", "Amani"); await page.fill("#last_name", "Mutiso"); await page.fill("#phone", "0711 222 333"); await page.locator("input[name=consent]").check();
-  await page.getByRole("button", { name: "Register candidate" }).click(); await dialog.getByText("What would you like to do next?").waitFor(); await closeNext();
+  await page.getByRole("button", { name: "Register recruit" }).click(); await dialog.getByText("What would you like to do next?").waitFor(); await closeNext();
   await page.waitForURL(/\/candidates\/[0-9a-f-]{36}/); await page.waitForLoadState("networkidle");
   await page.locator(".guide select[name=job_order_id]").selectOption({ index: 1 });
-  await page.locator(".guide").getByRole("button", { name: "Match", exact: true }).click(); await dialog.getByText("What would you like to do next?").waitFor(); await closeNext();
+  await page.locator(".guide").getByRole("button", { name: "Assign", exact: true }).click(); await dialog.getByText("What would you like to do next?").waitFor(); await closeNext();
   await page.getByRole("button", { name: "Move to With employer", exact: true }).click();
   await dialog.getByRole("button", { name: "Move to With employer", exact: true }).click(); await dialog.getByText("What would you like to do next?").waitFor(); await closeNext();
 });

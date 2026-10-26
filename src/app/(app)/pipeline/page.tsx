@@ -84,7 +84,7 @@ export default async function Pipeline({ searchParams }: PageProps<"/pipeline">)
           <Link href={href({ view: undefined, stage: undefined, page: undefined })} className="seg-item" aria-current={!list ? "true" : undefined}><KanbanSquare size={15} /> Board</Link>
           <Link href={href({ view: "list", page: undefined })} className="seg-item" aria-current={list ? "true" : undefined}><LayoutList size={15} /> List</Link>
         </div>
-        {can(ctx.role, "candidates:write") && <Link href="/candidates/new" className="btn btn-primary"><Plus size={16} /> Add candidate</Link>}
+        {can(ctx.role, "candidates:write") && <Link href="/candidates/new" className="btn btn-primary"><Plus size={16} /> Add recruit</Link>}
       </PageHeader>
 
       <form className="flex flex-wrap items-center gap-2">

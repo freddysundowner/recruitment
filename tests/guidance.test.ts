@@ -117,7 +117,8 @@ describe("sample data", () => {
 
 describe("every action says what comes next", () => {
   // Actions that need no suggestion go here.
-  const SILENT = new Set<string>();
+  // Ticking a requirement off is a quick toggle on a list, so it does not open a box each time.
+  const SILENT = new Set<string>(["setRequirement"]);
 
   it("each server action suggests a next step or moves the user on", async () => {
     const { readdirSync, readFileSync } = await import("node:fs");

@@ -25,6 +25,7 @@ export function CandidateFields({ v = {} }: { v?: Values }) {
           </select>
         </div>
         {text("county", "County")}
+        {text("experience_years", "Years of experience", { type: "number" })}
       </div>
       <div>
         <label className="label" htmlFor="skills">Skills</label>

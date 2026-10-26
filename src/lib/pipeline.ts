@@ -3,6 +3,7 @@ import type { Actor } from "./actor";
 import { audit } from "./audit";
 import { can } from "./perms";
 import { notifyCandidate, notifyEmployer } from "./notify";
+import { placementFit, requiredDocs } from "./requirements";
 
 export type MoveResult = { ok: true } | { ok: false; error: string };
 
@@ -39,17 +40,7 @@ export async function contractStatus(tx: Sql, placementId: string) {
   return { candidate, employer, differences };
 }
 
-/** Documents a placement needs: the destination country's checklist if the agency has one, else the stage default. */
-export async function requiredDocs(tx: Sql, placementId: string, stageDefault: string[]): Promise<string[]> {
-  const [p] = await tx`
-    SELECT j.country, j.category FROM placements p JOIN job_orders j ON j.id = p.job_order_id WHERE p.id = ${placementId}`;
-  if (!p) return stageDefault;
-  const [c] = await tx`
-    SELECT required_doc_types FROM country_checklists
-    WHERE lower(country) = lower(${p.country}) AND (lower(job_category) = lower(${p.category}) OR job_category = '')
-    ORDER BY (job_category <> '') DESC LIMIT 1`;
-  return c ? (c.required_doc_types as string[]) : stageDefault;
-}
+export { requiredDocs } from "./requirements";
 
 export type GateItem = {
   key: string;
@@ -61,11 +52,13 @@ export type GateItem = {
   anchor?: string;
   /** Or a page elsewhere in the app. */
   href?: string;
+  /** Something only a person can judge, ticked by hand for this recruit. */
+  manual?: { text: string };
 };
 
 export type GateSubject = {
   candidate_id: string; tenant_id: string; job_order_id: string | null; required_doc_types: string[]; requires_payment: boolean; requires_contract: boolean;
-  requires_visa: boolean; requires_orientation: boolean; requires_arrival: boolean; id: string;
+  requires_visa: boolean; requires_orientation: boolean; requires_arrival: boolean; id: string; cur_needs_job?: boolean;
 };
 export type GateTarget = { requires_job_order: boolean; requires_vetted_employer: boolean };
 
@@ -115,8 +108,16 @@ export async function evaluateGates(tx: Sql, p: GateSubject, t: GateTarget): Pro
   }
 
   if (t.requires_job_order) {
-    items.push({ key: "job", label: "Matched to a job", done: Boolean(p.job_order_id), anchor: "#placement" });
-    if (!p.job_order_id) problems.push("Assign a job order first");
+    items.push({ key: "job", label: "Assigned to an opening", done: Boolean(p.job_order_id), anchor: "#placement" });
+    if (!p.job_order_id) problems.push("Assign an opening first");
+  }
+
+  // Being put forward to the employer is the moment the recruit has to meet what the opening asks for.
+  if (t.requires_job_order && !p.cur_needs_job && p.job_order_id) {
+    for (const f of await placementFit(tx, p.id)) {
+      items.push(f);
+      if (!f.done) problems.push(`Does not meet the opening's requirement: ${f.label}`);
+    }
   }
 
   if (t.requires_vetted_employer && p.job_order_id && rules.require_vetting !== false) {

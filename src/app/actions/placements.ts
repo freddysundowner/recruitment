@@ -15,6 +15,7 @@ function refresh(placementId: string, candidateId?: string) {
   revalidatePath("/candidates/[id]", "page");
   revalidatePath("/pipeline");
   revalidatePath("/candidates");
+  revalidatePath("/job-orders/[id]", "page");
   if (candidateId) revalidatePath(`/candidates/${candidateId}`);
 }
 
@@ -23,14 +24,37 @@ export async function assignJobOrder(placementId: string, _: FormState, fd: Form
   try {
     const ctx = await requireCan("pipeline:move");
     const jobId = field(fd, "job_order_id");
-    if (!jobId) return { error: "Choose a job order." };
+    if (!jobId) return { error: "Choose an opening." };
     try {
       await withTenant(ctx.tenantId, (tx) => assignJob(tx, ctx, placementId, jobId));
     } catch (e) {
       return fail(e);
     }
     refresh(placementId);
-    return { ok: "Job order assigned", next: steps.jobAssigned(placementId) };
+    return { ok: "Assigned to the opening", next: steps.jobAssigned(placementId) };
+  } catch (e) {
+    unstable_rethrow(e);
+    return fail(e);
+  }
+}
+
+/** Ticks, or un-ticks, a requirement that only a person can judge (a licence seen, a skill tested). */
+export async function setRequirement(placementId: string, text: string, met: boolean, _: FormState): Promise<FormState> {
+  try {
+    const ctx = await requireCan("pipeline:move");
+    try {
+      await withTenant(ctx.tenantId, async (tx) => {
+        const [p] = await tx`SELECT requirement_ticks FROM placements WHERE id = ${placementId} AND outcome <> 'closed'`;
+        if (!p) throw new Error("Placement not found or closed.");
+        const rest = (p.requirement_ticks as string[]).filter((t) => t !== text);
+        await tx`UPDATE placements SET requirement_ticks = ${met ? [...rest, text] : rest} WHERE id = ${placementId}`;
+        await audit(tx, ctx, met ? "placement.requirement_met" : "placement.requirement_unmet", "placement", placementId, { text });
+      });
+    } catch (e) {
+      return fail(e);
+    }
+    refresh(placementId);
+    return { ok: met ? "Marked as met" : "Marked as not met" };
   } catch (e) {
     unstable_rethrow(e);
     return fail(e);

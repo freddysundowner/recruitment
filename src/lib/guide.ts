@@ -1,5 +1,5 @@
 import { withTenant } from "./db";
-import { evaluateGates, gateSubject, type GateItem } from "./pipeline";
+import { evaluateGates, gateSubject, type GateItem, type GateTarget } from "./pipeline";
 
 export type Guide = {
   placement: { id: string; outcome: string; payment_model: string | null; job_order_id: string | null };
@@ -13,7 +13,7 @@ export type Guide = {
 export async function loadGuide(tenantId: string, placementId: string): Promise<Guide> {
   return withTenant(tenantId, async (tx) => {
     const p = await gateSubject(tx, placementId);
-    const stages = (await tx`SELECT id, position, name, description FROM pipeline_stages ORDER BY position`) as unknown as Guide["stages"];
+    const stages = (await tx`SELECT * FROM pipeline_stages ORDER BY position`) as unknown as (Guide["stages"][number] & GateTarget)[];
     const cur = stages.find((s) => s.position === p.cur_pos)!;
     const next = stages.find((s) => s.position === p.cur_pos + 1) ?? null;
     const items = next ? (await evaluateGates(tx, p, next as never)).items : [];
