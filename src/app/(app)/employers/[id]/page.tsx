@@ -81,7 +81,7 @@ export default async function Employer({ params }: PageProps<"/employers/[id]">)
             <div className="grid sm:grid-cols-3 gap-3">
               <div><label className="label" htmlFor="pu_name">Name</label><input id="pu_name" name="name" required className="input" /></div>
               <div><label className="label" htmlFor="pu_email">Email</label><input id="pu_email" name="email" type="email" required className="input" /></div>
-              <div><label className="label" htmlFor="pu_pw">Temporary password</label><input id="pu_pw" name="password" type="password" minLength={10} required className="input" /></div>
+              <div><label className="label" htmlFor="pu_pw">Temporary password</label><input id="pu_pw" name="password" type="password" minLength={8} required className="input" /></div>
             </div>
           </ActionForm>
         )}

@@ -61,7 +61,7 @@ export default async function Security({ searchParams }: PageProps<"/account/sec
         <div className="h2 mb-3">Change password</div>
         <ActionForm action={changePassword} submit="Change password" className="grid gap-3 max-w-xs">
           <div><label className="label" htmlFor="current">Current password</label><input id="current" name="current" type="password" required className="input" /></div>
-          <div><label className="label" htmlFor="next">New password (10+ characters)</label><input id="next" name="next" type="password" minLength={10} required className="input" /></div>
+          <div><label className="label" htmlFor="next">New password (8+ characters)</label><input id="next" name="next" type="password" minLength={8} required className="input" /></div>
         </ActionForm>
       </div>
     </>

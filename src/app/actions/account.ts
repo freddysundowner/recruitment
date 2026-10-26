@@ -88,7 +88,7 @@ export async function changePassword(_: FormState, fd: FormData): Promise<FormSt
     const ctx = await requireCtx();
     const current = field(fd, "current") ?? "";
     const next = field(fd, "next") ?? "";
-    if (next.length < 10) return { error: "The new password needs at least 10 characters." };
+    if (next.length < 8) return { error: "The new password needs at least 8 characters." };
     try {
       await withTenant(ctx.tenantId, async (tx) => {
         const [u] = await tx`SELECT password_hash FROM users WHERE id = ${ctx.userId}`;

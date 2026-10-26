@@ -29,7 +29,7 @@ export async function runSetup(_: FormState, fd: FormData): Promise<FormState> {
     const email = field(fd, "email");
     const password = field(fd, "password") ?? "";
     if (!agency || !name || !email) return { error: "Enter the agency name and the admin's name and email." };
-    if (password.length < 10) return { error: "Use a password of at least 10 characters." };
+    if (password.length < 8) return { error: "Use a password of at least 8 characters." };
 
     const [row] = await sql`
       SELECT platform_create_tenant(${agency}, 'main', ${name}, ${email}, ${await bcrypt.hash(password, 11)}, 'enterprise', 0, ${sql.json(DEFAULT_STAGES as never)}) AS id`;

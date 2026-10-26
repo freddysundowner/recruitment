@@ -152,7 +152,7 @@ export async function addUser(_: FormState, fd: FormData): Promise<FormState> {
         name: z.string().min(1, "Enter a name"),
         email: z.email("Enter a valid email"),
         role: z.enum(["admin", "recruiter", "documentation", "finance"]),
-        password: z.string().min(10, "The password needs at least 10 characters"),
+        password: z.string().min(8, "The password needs at least 8 characters"),
       })
       .safeParse({ name: field(fd, "name"), email: field(fd, "email"), role: field(fd, "role"), password: field(fd, "password") });
     if (!p.success) return { error: p.error.issues[0].message };
@@ -288,7 +288,7 @@ export async function createEmployerUser(employerId: string, _: FormState, fd: F
   try {
     const ctx = await requireCan("employers:write");
     const p = z
-      .object({ name: z.string().min(1, "Enter a name"), email: z.email("Enter a valid email"), password: z.string().min(10, "The temporary password needs at least 10 characters") })
+      .object({ name: z.string().min(1, "Enter a name"), email: z.email("Enter a valid email"), password: z.string().min(8, "The temporary password needs at least 8 characters") })
       .safeParse({ name: field(fd, "name"), email: field(fd, "email"), password: field(fd, "password") });
     if (!p.success) return { error: p.error.issues[0].message };
     try {

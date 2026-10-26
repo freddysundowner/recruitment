@@ -18,7 +18,7 @@ export default async function Setup() {
           <div className="grid sm:grid-cols-2 gap-3">
             <div><label className="label" htmlFor="name">Your name</label><input id="name" name="name" required className="input" /></div>
             <div><label className="label" htmlFor="email">Your email (your sign-in)</label><input id="email" name="email" type="email" required className="input" /></div>
-            <div className="sm:col-span-2"><label className="label" htmlFor="password">Password (10+ characters)</label><input id="password" name="password" type="password" minLength={10} required autoComplete="new-password" className="input" /></div>
+            <div className="sm:col-span-2"><label className="label" htmlFor="password">Password (8+ characters)</label><input id="password" name="password" type="password" minLength={8} required autoComplete="new-password" className="input" /></div>
           </div>
         </ActionForm>
       </div>

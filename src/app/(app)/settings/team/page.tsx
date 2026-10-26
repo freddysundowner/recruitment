@@ -57,7 +57,7 @@ export default async function Team() {
               <label className="label" htmlFor="role">Role</label>
               <select id="role" name="role" className="select" defaultValue="recruiter">{STAFF_ROLES.map((k) => <option key={k} value={k}>{ROLE_LABEL[k]}</option>)}</select>
             </div>
-            <div><label className="label" htmlFor="password">Temporary password (10+ characters)</label><input id="password" name="password" type="password" minLength={10} required className="input" autoComplete="new-password" /></div>
+            <div><label className="label" htmlFor="password">Temporary password (8+ characters)</label><input id="password" name="password" type="password" minLength={8} required className="input" autoComplete="new-password" /></div>
           </div>
         </ActionForm>
       </SettingsCard>

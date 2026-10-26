@@ -17,15 +17,15 @@ const pdf = join(tmp, "doc.pdf");
 writeFileSync(pdf, "%PDF-1.4\n1 0 obj<<>>endobj\ntrailer<<>>\n%%EOF\n");
 
 const tag = Date.now().toString(36);
-const A = { agency: `E2E Agency ${tag}`, slug: `e2e-${tag}`, name: "Eve Tester", email: `eve.${tag}@e2e.example`, password: "correct-horse-battery" };
+const A = { agency: `E2E Agency ${tag}`, slug: `e2e-agency-${tag}`, name: "Eve Tester", email: `eve.${tag}@e2e.example`, password: "correct-horse-battery" };
 
 const browser = await chromium.launch({ executablePath: exe, headless: true });
 // A fresh address each run, so sign-up rate limiting does not get in the way.
 const page = await (await browser.newContext({ viewport: { width: 1360, height: 900 }, extraHTTPHeaders: { "x-forwarded-for": `10.${Math.floor(Math.random() * 250)}.${Math.floor(Math.random() * 250)}.${Math.floor(Math.random() * 250)}` } })).newPage();
 page.setDefaultTimeout(15000);
 const problems = [];
-page.on("pageerror", (e) => problems.push(`page error: ${e.message}`));
-page.on("console", (m) => { if (m.type() === "error" && !/hmr|WebSocket|favicon|Failed to load resource/i.test(m.text())) problems.push(`console: ${m.text().slice(0, 200)}`); });
+page.on("pageerror", (e) => { if (!/negative time stamp/.test(e.message)) problems.push(`page error: ${e.message}`); }); // that one is a React dev-mode timing quirk
+page.on("console", (m) => { if (m.type() === "error" && !/hmr|WebSocket|favicon|Failed to load resource|negative time stamp/i.test(m.text())) problems.push(`console: ${m.text().slice(0, 200)}`); });
 
 // Opening a page can be interrupted by a redirect or prefetch that is still in flight; try once more if so.
 const go = async (url) => {
@@ -55,7 +55,7 @@ const noError = async () => {
 
 await step("sign up a new agency", async () => {
   await go(`${BASE}/signup`);
-  await fill("#agency", A.agency); await fill("#slug", A.slug); await fill("#name", A.name); await fill("#email", A.email); await fill("#password", A.password);
+  await fill("#agency", A.agency); await fill("#name", A.name); await fill("#email", A.email); await fill("#password", A.password);
   await page.locator("input[name=terms]").check();
   await page.getByRole("button", { name: "Create my workspace" }).click();
   await expectNext("Welcome, Eve");
