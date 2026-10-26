@@ -7,7 +7,7 @@ import { reviewSender } from "@/app/actions/platform";
 const fmt = (d: unknown) => new Date(d as string).toLocaleDateString("en-KE", { day: "numeric", month: "short", year: "numeric" });
 
 export default async function Senders() {
-  const admin = await requirePlatform();
+  await requirePlatform();
   const rows = await sql`SELECT * FROM platform_senders_list()`;
   const pending = rows.filter((r) => r.status === "pending").length;
   return (
@@ -29,8 +29,8 @@ export default async function Senders() {
                 <td>{fmt(r.created_at)}</td>
                 <td><span className={`badge ${r.status === "approved" ? "badge-good" : r.status === "rejected" ? "badge-bad" : "badge-warn"}`}>{r.status}</span>{r.note && <div className="muted text-xs">{r.note}</div>}</td>
                 <td className="text-right whitespace-nowrap">
-                  {admin.totpEnabled && r.status !== "approved" && <ActionForm confirm="Approve this sender? Make sure it is registered or verified with the provider first." action={reviewSender.bind(null, r.id, "approved")} submit="Approve" buttonClass="btn btn-sm btn-primary" className="inline"><></></ActionForm>}
-                  {admin.totpEnabled && r.status === "pending" && <ActionForm confirm="Reject this sender?" action={reviewSender.bind(null, r.id, "rejected")} submit="Reject" buttonClass="btn btn-sm btn-danger" className="inline ml-1"><></></ActionForm>}
+                  {r.status !== "approved" && <ActionForm confirm="Approve this sender? Make sure it is registered or verified with the provider first." action={reviewSender.bind(null, r.id, "approved")} submit="Approve" buttonClass="btn btn-sm btn-primary" className="inline"><></></ActionForm>}
+                  {r.status === "pending" && <ActionForm confirm="Reject this sender?" action={reviewSender.bind(null, r.id, "rejected")} submit="Reject" buttonClass="btn btn-sm btn-danger" className="inline ml-1"><></></ActionForm>}
                 </td>
               </tr>
             ))}

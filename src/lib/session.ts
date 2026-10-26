@@ -7,7 +7,6 @@ import { can, type Action, type Role } from "./perms";
 import { getAccess, lockedMessage } from "./plan";
 
 const COOKIE = "session";
-const MFA_COOKIE = "mfa";
 const MAX_AGE = 60 * 60 * 24 * 7;
 const key = () => new TextEncoder().encode(process.env.SESSION_SECRET);
 const secure = () => process.env.NODE_ENV === "production";
@@ -18,9 +17,6 @@ export type Ctx = {
   role: Role;
   name: string;
   employerId: string | null;
-  totpEnabled: boolean;
-  /** The agency requires two-factor sign-in, and this user has not set it up yet. */
-  mustSetup2fa: boolean;
   /** Name of the platform administrator when this is a support session. Support sessions are read-only. */
   support: string | null;
 };
@@ -40,32 +36,6 @@ export async function destroySession() {
   (await cookies()).delete(COOKIE);
 }
 
-/** After the password is right but before the one-time code: a short-lived marker, not a session. */
-export async function createPendingMfa(userId: string, tenantId: string) {
-  const token = await new SignJWT({ tid: tenantId, mfa: true })
-    .setProtectedHeader({ alg: "HS256" })
-    .setSubject(userId)
-    .setExpirationTime("5m")
-    .sign(key());
-  (await cookies()).set(MFA_COOKIE, token, { httpOnly: true, sameSite: "lax", secure: secure(), maxAge: 300, path: "/login" });
-}
-
-export async function readPendingMfa(): Promise<{ userId: string; tenantId: string } | null> {
-  const token = (await cookies()).get(MFA_COOKIE)?.value;
-  if (!token) return null;
-  try {
-    const { payload } = await jwtVerify(token, key());
-    if (!payload.mfa || !payload.sub || !payload.tid) return null;
-    return { userId: payload.sub, tenantId: payload.tid as string };
-  } catch {
-    return null;
-  }
-}
-
-export async function clearPendingMfa() {
-  (await cookies()).delete({ name: MFA_COOKIE, path: "/login" });
-}
-
 /** Reads the cookie, then re-checks the user in the database so role changes and disabled accounts apply at once. */
 export const getCtx = cache(async (): Promise<Ctx | null> => {
   const token = (await cookies()).get(COOKIE)?.value;
@@ -78,7 +48,7 @@ export const getCtx = cache(async (): Promise<Ctx | null> => {
     const rows = await withTenant(
       tenantId,
       (tx) => tx`
-        SELECT u.name, u.role, u.employer_id, u.totp_enabled, (t.settings->>'require_2fa')::boolean AS require_2fa
+        SELECT u.name, u.role, u.employer_id
         FROM users u JOIN tenants t ON t.id = u.tenant_id
         WHERE u.id = ${userId} AND u.status = 'active' AND t.status = 'active'`,
     );
@@ -90,8 +60,6 @@ export const getCtx = cache(async (): Promise<Ctx | null> => {
       role: u.role as Role,
       name: u.name as string,
       employerId: (u.employer_id as string | null) ?? null,
-      totpEnabled: Boolean(u.totp_enabled),
-      mustSetup2fa: Boolean(u.require_2fa) && !u.totp_enabled && !payload.sup,
       support: (payload.sup as string | undefined) ?? null,
     };
   } catch {

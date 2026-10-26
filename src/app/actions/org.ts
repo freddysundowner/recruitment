@@ -271,18 +271,6 @@ export async function saveRules(_: FormState, fd: FormData): Promise<FormState> 
   }
 }
 
-export async function saveSecurity(_: FormState, fd: FormData): Promise<FormState> {
-  try {
-    const ctx = await requireCan("users:manage");
-    const require2fa = fd.get("require_2fa") === "on";
-    await mergeSettings(ctx, { require_2fa: require2fa }, "settings.security", { require2fa });
-    return { ok: require2fa ? "Two-step sign-in is now required for everyone" : "Saved", next: steps.settingsSaved("security") };
-  } catch (e) {
-    unstable_rethrow(e);
-    return fail(e);
-  }
-}
-
 // ---------------------------------------------------------------- employer portal accounts
 export async function createEmployerUser(employerId: string, _: FormState, fd: FormData): Promise<FormState> {
   try {

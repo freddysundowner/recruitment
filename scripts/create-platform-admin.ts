@@ -20,7 +20,7 @@ if (password.length < 12) {
 async function main() {
   const sql = postgres(process.env.MIGRATE_DATABASE_URL!, { onnotice: () => {} });
   await sql`INSERT INTO platform_admins (email, name, password_hash) VALUES (${email}, ${name}, ${await bcrypt.hash(password!, 11)})`;
-  console.log(`Created ${email}. Sign in at /platform/login; you will be asked to set up two-step sign-in.`);
+  console.log(`Created ${email}. Sign in at /platform/login.`);
   await sql.end();
 }
 main().catch((e) => { console.error(e); process.exit(1); });

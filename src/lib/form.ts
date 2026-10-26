@@ -3,7 +3,7 @@ import type { Step } from "./next-steps";
 export type FormState = {
   error?: string;
   ok?: string;
-  /** Lines shown once after success, such as recovery codes. */
+  /** Lines shown once after success, such as a generated value. */
   data?: string[];
   /** Suggested next moves, shown in a dialog. */
   next?: Step;

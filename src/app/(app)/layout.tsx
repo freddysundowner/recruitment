@@ -18,7 +18,6 @@ export const metadata: Metadata = { robots: { index: false, follow: false } };
 export default async function AppLayout({ children }: LayoutProps<"/">) {
   const ctx = await requireCtx();
   if (ctx.role === "employer") redirect("/employer");
-  if (ctx.mustSetup2fa) redirect("/account/security?required=1");
   const access = await getAccess(ctx.tenantId);
 
   const info = await withTenant(ctx.tenantId, async (tx) => {

@@ -14,7 +14,7 @@ export const metadata: Metadata = { robots: { index: false, follow: false } };
 export default async function ConsoleLayout({ children }: LayoutProps<"/platform">) {
   if (isSingleInstall()) notFound(); // a single install has no platform layer
   const admin = await requirePlatform();
-  const nav = [["/platform", "Overview"], ["/platform/tenants", "Agencies"], ["/platform/payments", "Payments"], ["/platform/plans", "Plans"], ["/platform/senders", "Sender IDs"], ["/platform/settings", "Settings"], ["/platform/admins", "Administrators"], ["/platform/security", "My security"]];
+  const nav = [["/platform", "Overview"], ["/platform/tenants", "Agencies"], ["/platform/payments", "Payments"], ["/platform/plans", "Plans"], ["/platform/senders", "Sender IDs"], ["/platform/settings", "Settings"], ["/platform/admins", "Administrators"], ["/platform/security", "My password"]];
   return (
     <div className="min-h-screen">
       <header className="bg-[#14181f] text-white">
@@ -27,7 +27,6 @@ export default async function ConsoleLayout({ children }: LayoutProps<"/platform
         </nav>
       </header>
       <main className="max-w-6xl mx-auto p-4 grid gap-4">
-        {!admin.totpEnabled && <div className="alert">Turn on two-step sign-in under <Link className="underline" href="/platform/security">My security</Link>. Until you do, you can look but not change anything.</div>}
         <Suspense><NextStepHost /></Suspense>
         {children}
       </main>

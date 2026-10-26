@@ -116,8 +116,8 @@ describe("sample data", () => {
 });
 
 describe("every action says what comes next", () => {
-  // These only show a one-time code or a sign-in form; there is nothing sensible to suggest afterwards.
-  const SILENT = new Set(["startTotp", "platformStartTotp"]);
+  // Actions that need no suggestion go here.
+  const SILENT = new Set<string>();
 
   it("each server action suggests a next step or moves the user on", async () => {
     const { readdirSync, readFileSync } = await import("node:fs");

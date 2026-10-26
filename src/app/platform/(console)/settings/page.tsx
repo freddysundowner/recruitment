@@ -27,10 +27,10 @@ function Text({ section, name, label, value, placeholder, hint }: { section: str
 }
 
 export default async function PlatformSettings() {
-  const admin = await requirePlatform();
+  await requirePlatform();
   const all = (await getRawSettings()) as Record<string, Raw>;
   const f = (section: string, children: React.ReactNode) => (
-    <ActionForm action={savePlatformSection.bind(null, section)} confirm="Save these settings? They apply to every agency straight away." submit={admin.totpEnabled ? "Save" : undefined} resetOnSuccess={false} className="grid gap-3">
+    <ActionForm action={savePlatformSection.bind(null, section)} confirm="Save these settings? They apply to every agency straight away." submit="Save" resetOnSuccess={false} className="grid gap-3">
       {children}
     </ActionForm>
   );
@@ -46,7 +46,7 @@ export default async function PlatformSettings() {
     <>
       <div>
         <h1 className="h1">Settings</h1>
-        <p className="muted">Everything about running the service lives here. Anything left empty falls back to the server&apos;s environment file.{!admin.totpEnabled && " Turn on two-step sign-in under My security to be able to save."}</p>
+        <p className="muted">Everything about running the service lives here. Anything left empty falls back to the server&apos;s environment file.</p>
       </div>
 
       {card("Sign-up", "Who can create a workspace, and how long the free trial lasts.", f("signup", (

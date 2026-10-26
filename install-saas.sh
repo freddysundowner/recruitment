@@ -51,7 +51,7 @@ create_platform_admin() {
 next_steps() {
   local u="$([ "$SSL_STATE" = new ] || [ "$SSL_STATE" = existing ] && echo https || echo http)://$DOMAIN"
   printf '\n%sWhat to do next%s\n' "$B" "$N"
-  say "1. Sign in at $u/platform/login with ${PLATFORM_ADMIN_EMAIL:-the platform owner email}. You will be asked to set up two-step sign-in."
+  say "1. Sign in at $u/platform/login with ${PLATFORM_ADMIN_EMAIL:-the platform owner email}."
   say "2. Open Settings in the console and add: BlessedTexts (SMS), Brevo (email), your M-Pesa paybill or till, and Stripe if you take cards."
   say "3. Check the plans and prices under Plans, and the SMS credit price and free credits under Settings."
   say "4. Agencies sign themselves up at $u/signup"

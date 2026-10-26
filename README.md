@@ -32,7 +32,7 @@ Open http://localhost:3100. Sign-ins created by `npm run seed` (all use the pass
 | Employer (two companies) | `/login` | employer@alnoor.test, employer@gulfcare.test |
 | A second agency, to see isolation | `/login` | admin@other.test |
 | Candidates | `/c/demo` | register with any phone; the code is shown on screen in test mode |
-| Platform owner | `/platform/login` | platform@demo.test / `PlatformDemo123!` (you set up two-step sign-in on first use) |
+| Platform owner | `/platform/login` | platform@demo.test / `PlatformDemo123!` |
 
 `MPESA_MODE=mock` and `PORTAL_DEV_OTP=true` in `.env.local` make M-Pesa and sign-in codes work without Safaricom or an SMS provider. Never run `npm run seed` against a real database.
 
@@ -68,7 +68,7 @@ Open http://localhost:3100. Sign-ins created by `npm run seed` (all use the pass
 - **Candidate and employer walls too.** A candidate's session can reach only that candidate's rows, an employer's only its own jobs, enforced by the database, so a forgotten filter in code cannot leak data. Tests prove it. Deleting a candidate at their request removes their details, documents, messages and name from the audit trail, and keeps the money records without a name.
 - **Append-only records.** Costs, payments, stage history, contracts and the audit log cannot be edited or deleted by the app.
 - **Sensitive data.** ID and passport numbers and saved API secrets are encrypted (AES-256-GCM) with a keyed hash for search and duplicate checks. Documents are private, served only to signed-in people who may see them, with every view logged. Uploads are checked for real file type and optionally virus scanned.
-- **Sign-in.** Two-step sign-in (authenticator app and recovery codes), required for the platform owner and optional or required by agencies. Throttled attempts. Candidates use one-time codes that expire, lock after 5 wrong tries, and are stored only as hashes.
+- **Sign-in.** Password sign-in with throttled attempts. Candidates use one-time codes that expire, lock after 5 wrong tries, and are stored only as hashes.
 - **Payments.** M-Pesa callbacks carry a secret per request, are ignored if repeated, and a success for a different amount is held, not trusted. Stripe webhooks are signature-checked. A payment reference can only be recorded once.
 - **Support access** is read-only, time-limited, and visible to the agency.
 
@@ -78,7 +78,7 @@ Open http://localhost:3100. Sign-ins created by `npm run seed` (all use the pass
 npm test
 ```
 
-84 tests run against the local database and roll back everything they touch. They cover agency, candidate and employer isolation; every pipeline gate and the override rules; M-Pesa and Stripe handling; one-time codes; two-step codes (against the official RFC test vector); encryption; plans, limits and the grace period; activation keys; and CSV safety.
+84 tests run against the local database and roll back everything they touch. They cover agency, candidate and employer isolation; every pipeline gate and the override rules; M-Pesa and Stripe handling; one-time codes; encryption; plans, limits and the grace period; activation keys; and CSV safety.
 
 If `vitest` says "Cannot find native binding" on macOS, npm skipped an optional package: `npm i -D --no-save @rolldown/binding-darwin-x64` (or `-arm64`).
 

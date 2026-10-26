@@ -103,7 +103,7 @@ export function AppShell({ groups, brand, user, logout, fab, children }: Props) 
               </summary>
               <div className="menu-panel">
                 <Link href="/guide" className="menu-item"><BookOpen size={16} /> How to use this</Link>
-                <Link href="/account/security" className="menu-item"><ShieldCheck size={16} /> Account security</Link>
+                <Link href="/account/security" className="menu-item"><ShieldCheck size={16} /> Change password</Link>
                 <form action={logout}><button className="menu-item"><LogOut size={16} /> Sign out</button></form>
               </div>
             </details>
@@ -154,7 +154,7 @@ export function AppShell({ groups, brand, user, logout, fab, children }: Props) 
                 );
               })}
               <Link href="/guide" className="sheet-tile" onClick={() => setMore(false)}><span className="tab-icon"><BookOpen size={24} /></span><span>Guide</span></Link>
-              <Link href="/account/security" className="sheet-tile" onClick={() => setMore(false)}><span className="tab-icon"><ShieldCheck size={24} /></span><span>Security</span></Link>
+              <Link href="/account/security" className="sheet-tile" onClick={() => setMore(false)}><span className="tab-icon"><ShieldCheck size={24} /></span><span>Password</span></Link>
             </div>
             <form action={logout} className="mt-3"><button className="btn w-full" style={{ minHeight: 46 }}><LogOut size={16} /> Sign out</button></form>
           </div>

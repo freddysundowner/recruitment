@@ -1,7 +1,7 @@
 import { createCipheriv, createDecipheriv, createHash, createHmac, randomBytes, timingSafeEqual } from "node:crypto";
 
 /**
- * Field-level encryption for sensitive values (ID and passport numbers, TOTP secrets, per-agency API secrets).
+ * Field-level encryption for sensitive values (ID and passport numbers, per-agency API secrets).
  * AES-256-GCM, with a random nonce per value. The key comes from FIELD_ENCRYPTION_KEY (64 hex characters).
  * In development it is derived from SESSION_SECRET so nothing extra is needed to start; production must set its own.
  */

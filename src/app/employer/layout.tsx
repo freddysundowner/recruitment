@@ -16,7 +16,6 @@ export const metadata: Metadata = { robots: { index: false, follow: false } };
 export default async function EmployerLayout({ children }: LayoutProps<"/employer">) {
   const ctx = await requireCtx();
   if (ctx.role !== "employer" || !ctx.employerId) redirect("/");
-  if (ctx.mustSetup2fa) redirect("/account/security?required=1");
   const access = await getAccess(ctx.tenantId);
   if (!access.features.employer_portal) {
     return <div className="max-w-xl mx-auto p-6"><div className="card"><h1 className="h1">Employer portal unavailable</h1><p className="mt-2">This agency is not currently offering the employer portal. Please contact them directly.</p></div></div>;

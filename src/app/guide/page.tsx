@@ -107,7 +107,7 @@ export default async function Guide() {
             <Card title="Pipeline and checklists">Say which papers each country needs. Switch on two optional rules when you are ready: use only checked employers, and compare the two contracts.</Card>
             <Card title="Payments">Add your M-Pesa paybill or till. Then candidates can pay fees from their phones.</Card>
             <Card title="Messages">Pick how you contact candidates. Add your own sender name. See your text credits.</Card>
-            <Card title="Security">Turn on two-step sign-in for everyone. It keeps accounts safe.</Card>
+            <Card title="Password">Open your name at the top (or More, then Security, on a phone) to change your password.</Card>
           </div>
 
           <H2 id="employers">2. Employers and jobs</H2>

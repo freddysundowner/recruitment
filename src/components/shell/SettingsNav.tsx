@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Building2, CreditCard, History, KeyRound, ListChecks, Mail, ShieldCheck, Users, Wallet } from "lucide-react";
+import { Building2, CreditCard, History, KeyRound, ListChecks, Mail, Users, Wallet } from "lucide-react";
 
-const ICONS = { general: Building2, team: Users, pipeline: ListChecks, payments: Wallet, messages: Mail, security: ShieldCheck, activity: History, activation: KeyRound, billing: CreditCard } as const;
+const ICONS = { general: Building2, team: Users, pipeline: ListChecks, payments: Wallet, messages: Mail, activity: History, activation: KeyRound, billing: CreditCard } as const;
 
 export type SettingsGroup = { title: string; items: { href: string; label: string; icon: keyof typeof ICONS; hint: string }[] };
 

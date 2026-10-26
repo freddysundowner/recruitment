@@ -46,7 +46,7 @@ next_steps() {
   printf '\n%sWhat to do next%s\n' "$B" "$N"
   say "1. Open $([ "$SSL_STATE" = new ] || [ "$SSL_STATE" = existing ] && echo https || echo http)://$DOMAIN . It opens a setup page."
   say "2. Paste the activation key you were given, then enter the agency's name and your own details."
-  say "3. In Settings add the team, turn on two-step sign-in, and add the M-Pesa details."
+  say "3. In Settings add the team, and add the M-Pesa details."
   [ -z "$BLESSEDTEXTS_API_KEY" ] && say "4. For text messages, add BLESSEDTEXTS_API_KEY to $ENV_FILE, then: systemctl restart $SERVICE_WEB $SERVICE_WORKER"
 }
 

@@ -195,8 +195,8 @@ export const steps = {
   // ------------------------------------------------------------ settings and team
   userAdded: (): Step => ({
     title: "Team member added",
-    body: "Ask them to sign in and turn on two-step sign-in.",
-    actions: [{ label: "Require two-step sign-in", href: "/settings/security", primary: true }, { label: "Add another person", href: "/settings/team" }],
+    body: "Ask them to sign in with the password you set.",
+    actions: [{ label: "Add another person", href: "/settings/team", primary: true }, { label: "See recent activity", href: "/settings/activity" }],
   }),
   mpesaSettingsSaved: (): Step => ({
     title: "M-Pesa is set up",
@@ -348,11 +348,11 @@ export const steps = {
     body: active ? "They can sign in again." : "They are signed out and cannot sign in. Their past work stays on record.",
     actions: [{ label: "Back to the team", href: "/settings/team", primary: true }, { label: "Review recent activity", href: "/settings/activity" }],
   }),
-  settingsSaved: (what: "general" | "messages" | "security" | "fees" | "rules"): Step => {
+  settingsSaved: (what: "general" | "messages" | "fees" | "rules"): Step => {
     const more: StepAction[] = [
       { label: "Add your team", href: "/settings/team" },
       { label: "Set up M-Pesa", href: "/settings/payments" },
-      { label: "Turn on two-step sign-in", href: "/settings/security" },
+      { label: "Share your candidate page", href: "/settings/general" },
       { label: "Review pipeline checklists", href: "/settings/pipeline" },
     ].filter((a) => !a.href.endsWith(what === "rules" ? "pipeline" : what));
     return {
@@ -373,21 +373,6 @@ export const steps = {
   }),
 
   // ------------------------------------------------------------ account and billing
-  totpOn: (back: string): Step => ({
-    title: "Two-step sign-in is on",
-    body: "Copy the recovery codes shown on the page. They are not shown again.",
-    actions: [{ label: "Carry on", href: back, primary: true }],
-  }),
-  totpOff: (back: string): Step => ({
-    title: "Two-step sign-in is off",
-    body: "Your account is protected by your password alone.",
-    actions: [{ label: "Turn it back on", href: "/account/security", primary: true }, { label: "Carry on", href: back }],
-  }),
-  twoStepCleared: (): Step => ({
-    title: "Two-step sign-in cleared",
-    body: "They can set it up again when they next sign in.",
-    actions: [{ label: "Back to the team", href: "/settings/team", primary: true }, { label: "Security settings", href: "/settings/security" }],
-  }),
   passwordChanged: (back: string): Step => ({
     title: "Password changed",
     body: "Use the new password the next time you sign in.",
@@ -441,7 +426,7 @@ export const steps = {
   }),
   platformSecurity: (what: string): Step => ({
     title: what,
-    actions: [{ label: "Platform overview", href: "/platform", primary: true }, { label: "My security", href: "/platform/security" }],
+    actions: [{ label: "Platform overview", href: "/platform", primary: true }, { label: "My password", href: "/platform/security" }],
   }),
 
   // ------------------------------------------------------------ candidate portal

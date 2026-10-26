@@ -1,36 +1,10 @@
 import { config } from "dotenv";
 import { describe, expect, it } from "vitest";
 import { blindIndex, decrypt, encrypt, mask } from "../src/lib/crypto";
-import { base32Decode, base32Encode, codeAt, newRecoveryCodes, verifyCode } from "../src/lib/totp";
 import { normalizePhone } from "../src/lib/phone";
 import { toMinor } from "../src/lib/money";
 
 config({ path: ".env.local" });
-
-describe("TOTP", () => {
-  // RFC 6238 appendix B: secret "12345678901234567890", time 59 s, expected 94287082 (8 digits), so 287082 in 6.
-  const secret = base32Encode(Buffer.from("12345678901234567890"));
-  it("matches the RFC 6238 test vector", () => {
-    expect(secret).toBe("GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ");
-    expect(codeAt(secret, 59_000)).toBe("287082");
-    expect(codeAt(secret, 1_111_111_109_000)).toBe("081804");
-  });
-  it("accepts one step of clock drift but not more", () => {
-    expect(verifyCode(secret, "287082", 59_000)).toBe(true);
-    expect(verifyCode(secret, "287082", 59_000 + 30_000)).toBe(true);
-    expect(verifyCode(secret, "287082", 59_000 + 120_000)).toBe(false);
-    expect(verifyCode(secret, "12345", 59_000)).toBe(false);
-  });
-  it("round-trips base32", () => {
-    const buf = Buffer.from("hello world");
-    expect(base32Decode(base32Encode(buf)).toString()).toBe("hello world");
-  });
-  it("makes distinct recovery codes whose hashes do not reveal them", () => {
-    const { plain, hashed } = newRecoveryCodes();
-    expect(new Set(plain).size).toBe(8);
-    expect(hashed.every((h) => /^[0-9a-f]{64}$/.test(h))).toBe(true);
-  });
-});
 
 describe("field encryption", () => {
   it("round-trips and uses a fresh nonce each time", () => {

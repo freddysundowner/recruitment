@@ -13,7 +13,6 @@
     "db:up": "docker compose up -d",
     "worker": "tsx scripts/worker.ts",
     "platform:admin": "tsx scripts/create-platform-admin.ts",
-    "dev:totp": "tsx scripts/dev-totp.ts",
     "license:keys": "tsx scripts/license-keys.ts generate",
     "license:issue": "tsx scripts/license-keys.ts issue",
     "e2e": "node e2e/journey.mjs && node e2e/platform-and-mobile.mjs"

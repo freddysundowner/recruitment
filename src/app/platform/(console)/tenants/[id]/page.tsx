@@ -10,7 +10,7 @@ const fmt = (d: unknown) => (d ? new Date(d as string).toLocaleDateString("en-KE
 
 export default async function TenantPage({ params }: PageProps<"/platform/tenants/[id]">) {
   const { id } = await params;
-  const admin = await requirePlatform();
+  await requirePlatform();
   if (!/^[0-9a-f-]{36}$/.test(id)) notFound();
   const t = (await sql`SELECT *, (period_end < now()) AS expired FROM platform_tenants()`).find((x) => x.id === id);
   if (!t) notFound();
@@ -18,7 +18,7 @@ export default async function TenantPage({ params }: PageProps<"/platform/tenant
   const pays = await sql`SELECT * FROM platform_tenant_payments(${id})`;
   const credits = Number((await sql`SELECT platform_credits_balance(${id}) AS n`)[0].n);
   const expired = Boolean(t.expired);
-  const can = admin.totpEnabled;
+  const can = true;
 
   return (
     <>
@@ -54,7 +54,7 @@ export default async function TenantPage({ params }: PageProps<"/platform/tenant
                 <div className="col-span-2"><label className="label" htmlFor="reference">Reference</label><input id="reference" name="reference" className="input" /></div>
               </div>
             </ActionForm>
-          ) : <p className="muted">Set up two-step sign-in to make changes.</p>}
+          ) : null}
         </div>
 
         <div className="grid gap-4 content-start">
@@ -76,7 +76,7 @@ export default async function TenantPage({ params }: PageProps<"/platform/tenant
               <ActionForm confirm="Add these credits to the agency's account?" action={grantCredits.bind(null, t.id)} submit="Add credits" buttonClass="btn" className="flex gap-2 items-end">
                 <div className="w-32"><input name="credits" type="number" min={1} max={100000} defaultValue={100} className="input" aria-label="Credits to add" /></div><span className="muted self-center">credits, free of charge</span>
               </ActionForm>
-            ) : <p className="muted text-xs">Set up two-step sign-in to make changes.</p>}
+            ) : null}
           </div>
           {can && (
             <div className="card grid gap-3">

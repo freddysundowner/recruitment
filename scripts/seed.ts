@@ -70,7 +70,7 @@ async function extras() {
   const [hasPlatform] = await sql`SELECT count(*) AS n FROM platform_admins`;
   if (Number(hasPlatform.n) === 0) {
     await sql`INSERT INTO platform_admins (email, name, password_hash) VALUES ('platform@demo.test', 'Platform Owner', ${await bcrypt.hash("PlatformDemo123!", 11)})`;
-    console.log("Platform console: /platform/login as platform@demo.test / PlatformDemo123! (you set up two-step sign-in on first use)");
+    console.log("Platform console: /platform/login as platform@demo.test / PlatformDemo123!");
   }
   console.log("Demo extras ready: employer@alnoor.test and employer@gulfcare.test (same password), candidate portal at /c/demo");
 }

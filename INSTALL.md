@@ -89,7 +89,7 @@ Every page, and especially sign-in, must be served over HTTPS. M-Pesa will only 
 
 ## 4. First sign-in
 
-- **Single install:** open your address. You are taken to a setup page. Paste the activation key, enter your agency's name and your own details, and you are in. Then go to **Settings** to add your team, turn on two-step sign-in, and add your M-Pesa details.
+- **Single install:** open your address. You are taken to a setup page. Paste the activation key, enter your agency's name and your own details, and you are in. Then go to **Settings** to add your team and add your M-Pesa details.
 - **Shared service:** create the first platform administrator, then sign in at `/platform/login`:
 
   ```bash
@@ -98,7 +98,7 @@ Every page, and especially sign-in, must be served over HTTPS. M-Pesa will only 
     --entrypoint npx migrate tsx scripts/create-platform-admin.ts you@example.com "Your Name"
   ```
 
-  You will be asked to set up two-step sign-in straight away. Agencies sign themselves up at `/signup`.
+  Agencies sign themselves up at `/signup`.
 
 ## 5. Backups (do this on day one)
 

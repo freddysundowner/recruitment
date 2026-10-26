@@ -20,8 +20,7 @@ export default async function SettingsLayout({ children }: LayoutProps<"/setting
       { href: "/settings/payments", label: "Payments", icon: "payments", hint: "M-Pesa and fee limit" },
       { href: "/settings/messages", label: "Messages", icon: "messages", hint: "SMS, WhatsApp, email" },
     ] },
-    { title: "Security and records", items: [
-      { href: "/settings/security", label: "Security", icon: "security", hint: "Two-step sign-in" },
+    { title: "Records", items: [
       { href: "/settings/activity", label: "Activity log", icon: "activity", hint: "Who did what, when" },
       ...(access.singleInstall ? [{ href: "/settings/activation", label: "Activation", icon: "activation" as const, hint: "Your activation key" }] : []),
     ] },
