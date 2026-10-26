@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import {
-  ArrowRight, BadgeCheck, Building2, CalendarCheck, Check, FileCheck2, Globe2, KanbanSquare, MessageSquareText, ShieldCheck, Smartphone, Wallet,
+  ArrowRight, Building2, CalendarCheck, Check, FileCheck2, Globe2, KanbanSquare, MessageSquareText, ShieldCheck, Smartphone, Wallet,
 } from "lucide-react";
 import { sql } from "@/lib/db";
 import { formatMoney } from "@/lib/money";
@@ -95,7 +95,6 @@ export default async function Welcome() {
       <main>
         <section className="w-full lg:w-4/5 mx-auto px-5 pt-10 pb-14 grid lg:grid-cols-2 gap-10 items-center" aria-labelledby="hero-title">
           <div>
-            <span className="badge badge-brand mb-4"><BadgeCheck size={14} /> Made for overseas recruitment agencies in Kenya</span>
             <h1 id="hero-title" style={{ fontSize: 42, lineHeight: 1.1, letterSpacing: "-0.025em", fontWeight: 800 }}>Run your whole agency, from first registration to a worker settled abroad.</h1>
             <p className="muted mt-4 text-[17px]">Candidates, documents, employers, contracts, visas, M-Pesa and follow-up in one place. It tells you what to do next at every step, so nothing slips.</p>
             <div className="flex gap-3 mt-7 flex-wrap">
