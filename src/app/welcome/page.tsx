@@ -77,7 +77,7 @@ export default async function Welcome() {
     <div className="min-h-screen bg-white">
       {structured.map((s, i) => <script key={i} type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(s) }} />)}
 
-      <header className="max-w-6xl mx-auto px-5 py-4 flex items-center justify-between gap-3">
+      <header className="w-full lg:w-4/5 mx-auto px-5 py-4 flex items-center justify-between gap-3">
         <Link href="/" className="flex items-center gap-2.5 font-bold text-[17px]" aria-label={`${SITE.name} home`}><span className="brand-mark"><Globe2 size={18} /></span> {SITE.name}</Link>
         <nav aria-label="Main" className="hidden md:flex items-center gap-6 text-sm font-semibold">
           <a href="#features" className="hover:text-[var(--brand)]">Features</a>
@@ -93,7 +93,7 @@ export default async function Welcome() {
       </header>
 
       <main>
-        <section className="max-w-6xl mx-auto px-5 pt-10 pb-14 grid lg:grid-cols-2 gap-10 items-center" aria-labelledby="hero-title">
+        <section className="w-full lg:w-4/5 mx-auto px-5 pt-10 pb-14 grid lg:grid-cols-2 gap-10 items-center" aria-labelledby="hero-title">
           <div>
             <span className="badge badge-brand mb-4"><BadgeCheck size={14} /> Made for overseas recruitment agencies in Kenya</span>
             <h1 id="hero-title" style={{ fontSize: 42, lineHeight: 1.1, letterSpacing: "-0.025em", fontWeight: 800 }}>Run your whole agency, from first registration to a worker settled abroad.</h1>
@@ -128,7 +128,7 @@ export default async function Welcome() {
         </section>
 
         <section id="features" className="bg-[#f7f8fa] border-y border-[var(--line)]" aria-labelledby="features-title">
-          <div className="max-w-6xl mx-auto px-5 py-14">
+          <div className="w-full lg:w-4/5 mx-auto px-5 py-14">
             <h2 id="features-title" className="h1 text-center" style={{ fontSize: 28 }}>Everything an agency needs, nothing it does not</h2>
             <p className="muted text-center mt-1">One system for your staff, your employers and your candidates.</p>
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-8">
@@ -143,7 +143,7 @@ export default async function Welcome() {
           </div>
         </section>
 
-        <section id="how" className="max-w-6xl mx-auto px-5 py-14" aria-labelledby="how-title">
+        <section id="how" className="w-full lg:w-4/5 mx-auto px-5 py-14" aria-labelledby="how-title">
           <h2 id="how-title" className="h1 text-center" style={{ fontSize: 28 }}>How it works</h2>
           <ol className="grid md:grid-cols-3 gap-4 mt-8">
             {STEPS.map((s) => (
@@ -169,7 +169,7 @@ export default async function Welcome() {
         </section>
 
         <section id="pricing" className="bg-[#f7f8fa] border-y border-[var(--line)]" aria-labelledby="pricing-title">
-          <div className="max-w-6xl mx-auto px-5 py-14">
+          <div className="w-full lg:w-4/5 mx-auto px-5 py-14">
             <h2 id="pricing-title" className="h1 text-center" style={{ fontSize: 28 }}>Simple pricing</h2>
             <p className="muted text-center mt-1">{trial} days free. Pay monthly by M-Pesa or card.</p>
             <div className="grid md:grid-cols-3 gap-4 mt-8">
@@ -218,7 +218,7 @@ export default async function Welcome() {
       </main>
 
       <footer className="border-t border-[var(--line)] py-8">
-        <nav aria-label="Footer" className="max-w-6xl mx-auto px-5 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm">
+        <nav aria-label="Footer" className="w-full lg:w-4/5 mx-auto px-5 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm">
           <span className="font-semibold">{SITE.name}</span>
           <Link className="link" href="/guide">Guide</Link>
           <a className="link" href="#pricing">Pricing</a>

@@ -62,13 +62,13 @@ export default async function Guide() {
     <div className="min-h-screen bg-white">
       {structured.map((s, i) => <script key={i} type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(s) }} />)}
       <header className="border-b border-[var(--line)]">
-        <div className="max-w-6xl mx-auto px-5 py-3.5 flex items-center justify-between gap-3">
+        <div className="w-full lg:w-4/5 mx-auto px-5 py-3.5 flex items-center justify-between gap-3">
           <Link href="/" className="flex items-center gap-2.5 font-bold text-[17px]"><span className="brand-mark"><Globe2 size={18} /></span> {SITE.name}</Link>
           {signedIn ? <Link href="/" className="btn">Back to the app</Link> : <Link href="/login" className="btn">Sign in</Link>}
         </div>
       </header>
 
-      <div className="max-w-6xl mx-auto px-5 py-10 grid lg:grid-cols-[220px_1fr] gap-10">
+      <div className="w-full lg:w-4/5 mx-auto px-5 py-10 grid lg:grid-cols-[220px_1fr] gap-10">
         <nav aria-label="On this page" className="hidden lg:block">
           <div className="sticky top-6">
             <div className="eyebrow mb-2">On this page</div>
