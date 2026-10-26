@@ -33,7 +33,7 @@ export default async function Employer({ params }: PageProps<"/employers/[id]">)
         <div className="flex items-center gap-3">
           <span className={`badge ${e.vetted ? "badge-good" : "badge-warn"}`}>{e.vetted ? "Vetted" : "Not vetted"}</span>
           {write && (
-            <ActionForm action={setVetted.bind(null, e.id, !e.vetted)} submit={e.vetted ? "Remove vetting" : "Mark as vetted"} buttonClass="btn btn-sm" className="">
+            <ActionForm action={setVetted.bind(null, e.id, !e.vetted)} confirm={e.vetted ? "Remove vetting? Candidates cannot move past the shortlist for this employer until it is marked as vetted again." : "Mark this employer as vetted? Make sure the registration check has passed."} submit={e.vetted ? "Remove vetting" : "Mark as vetted"} buttonClass="btn btn-sm" className="">
               <></>
             </ActionForm>
           )}

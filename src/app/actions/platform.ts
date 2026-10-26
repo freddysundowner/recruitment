@@ -5,6 +5,7 @@ import { redirect, unstable_rethrow } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { sql } from "@/lib/db";
 import { decrypt, encrypt, sha256 } from "@/lib/crypto";
+import { steps } from "@/lib/next-steps";
 import { fail, field, type FormState } from "@/lib/form";
 import { toMinor } from "@/lib/money";
 import { newRecoveryCodes, newSecret, verifyCode } from "@/lib/totp";
@@ -100,7 +101,7 @@ export async function platformConfirmTotp(_: FormState, fd: FormData): Promise<F
     const rc = newRecoveryCodes();
     await sql`SELECT platform_admin_set_totp(${a.id}, ${row.totp_secret}, true, ${sql.json(rc.hashed as never)})`;
     revalidatePath("/platform/security");
-    return { ok: "Two-step sign-in is on. Save these recovery codes now; each works once and they are not shown again.", data: rc.plain };
+    return { ok: "Two-step sign-in is on. Save these recovery codes now; each works once and they are not shown again.", data: rc.plain, next: steps.platformSecurity("Two-step sign-in is on. Copy the recovery codes shown on the page first.") };
   } catch (e) {
     unstable_rethrow(e);
     return fail(e);
@@ -115,7 +116,7 @@ export async function platformChangePassword(_: FormState, fd: FormData): Promis
     if (next.length < 12) return { error: "Use at least 12 characters." };
     if (!(await bcrypt.compare(field(fd, "current") ?? "", row.password_hash))) return { error: "Your current password is not right." };
     await sql`SELECT platform_admin_set_password(${a.id}, ${await bcrypt.hash(next, 11)})`;
-    return { ok: "Password changed" };
+    return { ok: "Password changed", next: steps.platformSecurity("Password changed") };
   } catch (e) {
     unstable_rethrow(e);
     return fail(e);
@@ -134,7 +135,7 @@ export async function setTenantPlan(tenantId: string, _: FormState, fd: FormData
       return fail(e);
     }
     revalidatePath(`/platform/tenants/${tenantId}`);
-    return { ok: "Plan changed" };
+    return { ok: "Plan changed", next: steps.tenantUpdated(tenantId, "Plan changed") };
   } catch (e) {
     unstable_rethrow(e);
     return fail(e);
@@ -151,7 +152,7 @@ export async function setTenantStatus(tenantId: string, status: "active" | "susp
     }
     revalidatePath(`/platform/tenants/${tenantId}`);
     revalidatePath("/platform/tenants");
-    return { ok: status === "suspended" ? "Suspended" : "Reactivated" };
+    return { ok: status === "suspended" ? "Suspended" : "Reactivated", next: steps.tenantUpdated(tenantId, status === "suspended" ? "Agency suspended" : "Agency reactivated") };
   } catch (e) {
     unstable_rethrow(e);
     return fail(e);
@@ -169,7 +170,7 @@ export async function extendTrial(tenantId: string, _: FormState, fd: FormData):
       return fail(e);
     }
     revalidatePath(`/platform/tenants/${tenantId}`);
-    return { ok: `Extended by ${days} days` };
+    return { ok: `Extended by ${days} days`, next: steps.tenantUpdated(tenantId, `Trial extended by ${days} days`) };
   } catch (e) {
     unstable_rethrow(e);
     return fail(e);
@@ -192,7 +193,7 @@ export async function recordManualPayment(tenantId: string, _: FormState, fd: Fo
       return fail(e);
     }
     revalidatePath(`/platform/tenants/${tenantId}`);
-    return { ok: "Payment recorded and the plan extended" };
+    return { ok: "Payment recorded and the plan extended", next: steps.tenantUpdated(tenantId, "Payment recorded, plan extended") };
   } catch (e) {
     unstable_rethrow(e);
     return fail(e);
@@ -235,7 +236,7 @@ export async function updatePlan(code: string, _: FormState, fd: FormData): Prom
       return fail(e);
     }
     revalidatePath("/platform/plans");
-    return { ok: "Plan saved" };
+    return { ok: "Plan saved", next: steps.planSaved() };
   } catch (e) {
     unstable_rethrow(e);
     return fail(e);
@@ -256,7 +257,7 @@ export async function createPlatformAdmin(_: FormState, fd: FormData): Promise<F
       return fail(e);
     }
     revalidatePath("/platform/admins");
-    return { ok: "Administrator added. They must set up two-step sign-in when they first sign in." };
+    return { ok: "Administrator added. They must set up two-step sign-in when they first sign in.", next: steps.adminChanged("Administrator added") };
   } catch (e) {
     unstable_rethrow(e);
     return fail(e);
@@ -269,7 +270,7 @@ export async function setPlatformAdminStatus(id: string, status: "active" | "dis
     if (a.id === id) return { error: "You cannot disable your own account." };
     await sql`SELECT platform_admin_set_status(${id}, ${status})`;
     revalidatePath("/platform/admins");
-    return { ok: "Updated" };
+    return { ok: "Updated", next: steps.adminChanged(status === "active" ? "Administrator enabled" : "Administrator disabled") };
   } catch (e) {
     unstable_rethrow(e);
     return fail(e);

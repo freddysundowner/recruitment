@@ -196,6 +196,12 @@ dialog.dlg::backdrop { background: rgba(16, 24, 40, 0.5); backdrop-filter: blur(
 .dlg-option.primary { border-color: var(--brand); background: var(--brand-soft); }
 .dlg-option .t { font-weight: 650; }
 .dlg-option .d { color: var(--muted); font-size: 12.5px; }
+.navbar { position: fixed; inset: 0 0 auto 0; height: 3px; z-index: 100; pointer-events: none; opacity: 0; background: var(--brand); transform-origin: left; transform: scaleX(0); transition: opacity .2s; }
+.navbar[data-busy="true"] { opacity: 1; animation: navgrow 12s cubic-bezier(.1,.7,.2,1) forwards; }
+@keyframes navgrow { from { transform: scaleX(.05); } to { transform: scaleX(.92); } }
+a[data-pending] { opacity: .6; cursor: progress; }
+.skel { background: linear-gradient(90deg, #eceff3 25%, #f6f7f9 50%, #eceff3 75%); background-size: 200% 100%; animation: shimmer 1.2s infinite; border-radius: 10px; }
+@keyframes shimmer { to { background-position: -200% 0; } }
 .dlg-foot { padding: 8px 24px 20px; display: flex; justify-content: flex-end; }
 
 

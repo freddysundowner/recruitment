@@ -38,7 +38,7 @@ export default async function Team() {
                       <ActionForm action={resetUser2fa.bind(null, u.id)} submit="Reset two-step" buttonClass="btn btn-sm mr-1" className="inline" confirm="Clear this person's two-step sign-in?"><></></ActionForm>
                     )}
                     {u.id !== ctx.userId && (
-                      <ActionForm action={setUserStatus.bind(null, u.id, u.status === "active" ? "disabled" : "active")} submit={u.status === "active" ? "Disable" : "Enable"} buttonClass="btn btn-sm" className="inline"><></></ActionForm>
+                      <ActionForm action={setUserStatus.bind(null, u.id, u.status === "active" ? "disabled" : "active")} confirm={u.status === "active" ? "Disable this account? They are signed out and cannot sign in until you enable it again." : undefined} submit={u.status === "active" ? "Disable" : "Enable"} buttonClass="btn btn-sm" className="inline"><></></ActionForm>
                     )}
                   </td>
                 </tr>

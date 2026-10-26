@@ -72,7 +72,7 @@ export async function checkStk(requestId: string, placementId: string, _: FormSt
       return fail(e);
     }
     refresh(placementId);
-    return { ok: message };
+    return { ok: message, next: steps.mpesaChecked(placementId) };
   } catch (e) {
     unstable_rethrow(e);
     return fail(e);
@@ -96,7 +96,7 @@ export async function simulateStk(requestId: string, placementId: string, outcom
       return fail(e);
     }
     refresh(placementId);
-    return { ok: outcome === "pay" ? "Payment simulated" : "Cancellation simulated" };
+    return { ok: outcome === "pay" ? "Payment simulated" : "Cancellation simulated", next: steps.mpesaChecked(placementId) };
   } catch (e) {
     unstable_rethrow(e);
     return fail(e);

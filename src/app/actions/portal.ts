@@ -240,7 +240,7 @@ export async function withdrawApplication(slug: string, jobId: string, _: FormSt
       return fail(e);
     }
     refresh(slug);
-    return { ok: "Application withdrawn" };
+    return { ok: "Application withdrawn", next: steps.portalWithdrawn(slug) };
   } catch (e) {
     unstable_rethrow(e);
     return fail(e);
@@ -289,7 +289,7 @@ export async function portalProfile(slug: string, _: FormState, fd: FormData): P
       return fail(e);
     }
     refresh(slug);
-    return { ok: "Saved" };
+    return { ok: "Saved", next: steps.portalProfileSaved(slug) };
   } catch (e) {
     unstable_rethrow(e);
     return fail(e);
@@ -339,7 +339,7 @@ export async function requestData(slug: string, kind: "export" | "delete", _: Fo
       return fail(e);
     }
     refresh(slug);
-    return { ok: kind === "delete" ? "Your request to delete your data was sent to the agency." : "Your request was sent. You can also download your data now." };
+    return { ok: kind === "delete" ? "Your request to delete your data was sent to the agency." : "Your request was sent. You can also download your data now.", next: steps.portalRequestSent(slug) };
   } catch (e) {
     unstable_rethrow(e);
     return fail(e);

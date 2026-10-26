@@ -163,7 +163,7 @@ export async function Operations({ placementId, tenantId, canEdit, stageRequired
                   {canEdit && a.result === "pending" && (
                     <span className="inline-flex gap-1">
                       {["passed", "failed", "no_show", "cancelled"].map((r) => (
-                        <ActionForm key={r} action={setAppointmentResult.bind(null, a.id, placementId, r)} submit={r.replace("_", " ")} buttonClass="btn btn-sm" className="inline"><></></ActionForm>
+                        <ActionForm key={r} action={setAppointmentResult.bind(null, a.id, placementId, r)} confirm={r === "passed" ? undefined : `Record this appointment as ${r.replace("_", " ")}? The candidate may be told.`} submit={r.replace("_", " ")} buttonClass="btn btn-sm" className="inline"><></></ActionForm>
                       ))}
                     </span>
                   )}

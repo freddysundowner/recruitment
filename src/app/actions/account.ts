@@ -8,6 +8,7 @@ import { requireCan, requireCtx } from "@/lib/session";
 import { audit } from "@/lib/audit";
 import { decrypt, encrypt } from "@/lib/crypto";
 import { newRecoveryCodes, newSecret, verifyCode } from "@/lib/totp";
+import { steps } from "@/lib/next-steps";
 import { fail, field, type FormState } from "@/lib/form";
 
 /** Step 1: create a secret for the authenticator app. It is not active until the first code is confirmed. */
@@ -51,7 +52,7 @@ export async function confirmTotp(_: FormState, fd: FormData): Promise<FormState
       return fail(e);
     }
     revalidatePath("/account/security");
-    return { ok: "Two-step sign-in is on. Save these recovery codes now; each works once and they are not shown again.", data: plain };
+    return { ok: "Two-step sign-in is on. Save these recovery codes now; each works once and they are not shown again.", data: plain, next: steps.totpOn(ctx.role === "employer" ? "/employer" : "/") };
   } catch (e) {
     unstable_rethrow(e);
     return fail(e);
@@ -75,7 +76,7 @@ export async function disableTotp(_: FormState, fd: FormData): Promise<FormState
       return fail(e);
     }
     revalidatePath("/account/security");
-    return { ok: "Two-step sign-in is off." };
+    return { ok: "Two-step sign-in is off.", next: steps.totpOff(ctx.role === "employer" ? "/employer" : "/") };
   } catch (e) {
     unstable_rethrow(e);
     return fail(e);
@@ -98,7 +99,7 @@ export async function changePassword(_: FormState, fd: FormData): Promise<FormSt
     } catch (e) {
       return fail(e);
     }
-    return { ok: "Password changed" };
+    return { ok: "Password changed", next: steps.passwordChanged(ctx.role === "employer" ? "/employer" : "/") };
   } catch (e) {
     unstable_rethrow(e);
     return fail(e);
@@ -118,7 +119,7 @@ export async function resetUser2fa(userId: string, _: FormState): Promise<FormSt
       return fail(e);
     }
     revalidatePath("/settings", "layout");
-    return { ok: "Two-step sign-in cleared" };
+    return { ok: "Two-step sign-in cleared", next: steps.twoStepCleared() };
   } catch (e) {
     unstable_rethrow(e);
     return fail(e);

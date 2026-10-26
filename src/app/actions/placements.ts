@@ -115,7 +115,7 @@ export async function reopenCandidate(candidateId: string, _: FormState): Promis
     }
     revalidatePath(`/candidates/${candidateId}`);
     revalidatePath("/pipeline");
-    return { ok: "Back in the pipeline" };
+    return { ok: "Back in the pipeline", next: steps.candidateReopened(candidateId) };
   } catch (e) {
     unstable_rethrow(e);
     return fail(e);

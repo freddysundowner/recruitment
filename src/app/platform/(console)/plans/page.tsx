@@ -14,7 +14,7 @@ export default async function Plans() {
       <p className="muted">Changes apply to every agency on the plan straight away. Leave a limit empty for unlimited.</p>
       {plans.map((p) => (
         <div key={p.code} className="card">
-          <ActionForm action={updatePlan.bind(null, p.code)} submit={admin.totpEnabled ? "Save plan" : undefined} resetOnSuccess={false} className="grid gap-3">
+          <ActionForm confirm="Save this plan? New limits apply to every agency on it immediately." action={updatePlan.bind(null, p.code)} submit={admin.totpEnabled ? "Save plan" : undefined} resetOnSuccess={false} className="grid gap-3">
             <div className="h2">{p.code}</div>
             <div className="grid sm:grid-cols-4 gap-3">
               <div><label className="label" htmlFor={`n_${p.code}`}>Name</label><input id={`n_${p.code}`} name="name" defaultValue={p.name} className="input" /></div>

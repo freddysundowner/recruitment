@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
+import { NextStepHost } from "@/components/NextStepHost";
 import { isSingleInstall } from "@/lib/plan";
 import { requirePlatform } from "@/lib/platform";
 import { platformLogout } from "@/app/actions/platform";
@@ -21,6 +23,7 @@ export default async function ConsoleLayout({ children }: LayoutProps<"/platform
       </header>
       <main className="max-w-6xl mx-auto p-4 grid gap-4">
         {!admin.totpEnabled && <div className="alert">Turn on two-step sign-in under <Link className="underline" href="/platform/security">My security</Link>. Until you do, you can look but not change anything.</div>}
+        <Suspense><NextStepHost /></Suspense>
         {children}
       </main>
     </div>

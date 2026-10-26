@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { sql } from "@/lib/db";
 import { createSession, requireCtx } from "@/lib/session";
 import { can } from "@/lib/perms";
+import { steps } from "@/lib/next-steps";
 import { fail, field, type FormState } from "@/lib/form";
 import { DEFAULT_STAGES } from "@/lib/stages";
 import { forgetLicense, stateFor, verifyKey } from "@/lib/license";
@@ -64,7 +65,7 @@ export async function activateKey(_: FormState, fd: FormData): Promise<FormState
         max_users = EXCLUDED.max_users, updates_until = EXCLUDED.updates_until, activated_at = now()`;
     forgetLicense();
     revalidatePath("/", "layout");
-    return { ok: "Activation key saved" };
+    return { ok: "Activation key saved", next: steps.activationSaved() };
   } catch (e) {
     unstable_rethrow(e);
     return fail(e);

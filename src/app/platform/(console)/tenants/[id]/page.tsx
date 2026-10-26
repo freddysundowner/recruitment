@@ -44,7 +44,7 @@ export default async function TenantPage({ params }: PageProps<"/platform/tenant
           <div className="h2">Record a payment</div>
           <p className="muted text-xs">Use this for bank transfers or cash. M-Pesa and card payments made on the agency&apos;s Billing page are recorded automatically. The reference stops the same payment being recorded twice.</p>
           {can ? (
-            <ActionForm action={recordManualPayment.bind(null, t.id)} submit="Record and extend" className="grid gap-3">
+            <ActionForm confirm="Record this payment and extend the agency's plan? This is recorded permanently." action={recordManualPayment.bind(null, t.id)} submit="Record and extend" className="grid gap-3">
               <div className="grid grid-cols-2 gap-3">
                 <div><label className="label" htmlFor="plan">Plan</label><select id="plan" name="plan" className="select" defaultValue={t.plan_code}>{plans.map((p) => <option key={p.code} value={p.code}>{p.name}</option>)}</select></div>
                 <div><label className="label" htmlFor="months">Months</label><input id="months" name="months" type="number" min={1} max={36} defaultValue={1} className="input" /></div>
@@ -60,11 +60,11 @@ export default async function TenantPage({ params }: PageProps<"/platform/tenant
           {can && (
             <div className="card grid gap-3">
               <div className="h2">Change plan</div>
-              <ActionForm action={setTenantPlan.bind(null, t.id)} submit="Change plan" buttonClass="btn" className="flex gap-2 items-end" resetOnSuccess={false}>
+              <ActionForm confirm="Change this agency's plan now? The new limits apply immediately." action={setTenantPlan.bind(null, t.id)} submit="Change plan" buttonClass="btn" className="flex gap-2 items-end" resetOnSuccess={false}>
                 <div className="flex-1"><select name="plan" className="select" defaultValue={t.plan_code}>{plans.map((p) => <option key={p.code} value={p.code}>{p.name} ({formatMoney(p.price_kes_minor)}/mo)</option>)}</select></div>
               </ActionForm>
               <div className="h2 mt-1">Extend the trial</div>
-              <ActionForm action={extendTrial.bind(null, t.id)} submit="Extend" buttonClass="btn" className="flex gap-2 items-end">
+              <ActionForm confirm="Extend this agency's trial?" action={extendTrial.bind(null, t.id)} submit="Extend" buttonClass="btn" className="flex gap-2 items-end">
                 <div className="w-32"><input name="days" type="number" min={1} max={90} defaultValue={7} className="input" aria-label="Days to add" /></div><span className="muted self-center">days</span>
               </ActionForm>
             </div>
@@ -73,7 +73,7 @@ export default async function TenantPage({ params }: PageProps<"/platform/tenant
             <div className="card grid gap-3">
               <div className="h2">Support access</div>
               <p className="muted text-xs">Opens this agency&apos;s screens as its admin, read-only, for one hour. The reason and your name appear in the agency&apos;s own activity log.</p>
-              <ActionForm action={startSupportAccess.bind(null, t.id)} submit="Open as support" buttonClass="btn" className="grid gap-2" resetOnSuccess={false}>
+              <ActionForm confirm="Open this agency's workspace as support? The session is read-only and recorded in their activity log." action={startSupportAccess.bind(null, t.id)} submit="Open as support" buttonClass="btn" className="grid gap-2" resetOnSuccess={false}>
                 <input name="reason" required placeholder="Ticket number and what you are checking" className="input" />
               </ActionForm>
             </div>

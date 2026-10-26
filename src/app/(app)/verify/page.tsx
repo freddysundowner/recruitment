@@ -29,7 +29,7 @@ export default async function Verify() {
                   {d.file_key !== "seed/none" && <a className="link mr-3" href={`/files/${d.id}`} target="_blank">View</a>}
                   <span className="inline-flex gap-1">
                     <ActionForm action={reviewDocument.bind(null, d.id, d.cid, "verified")} submit="Verify" buttonClass="btn btn-sm btn-primary" className="inline"><></></ActionForm>
-                    <ActionForm action={reviewDocument.bind(null, d.id, d.cid, "rejected")} submit="Reject" buttonClass="btn btn-sm btn-danger" className="inline"><></></ActionForm>
+                    <ActionForm confirm="Reject this document? The candidate will be asked to send a new one." action={reviewDocument.bind(null, d.id, d.cid, "rejected")} submit="Reject" buttonClass="btn btn-sm btn-danger" className="inline"><></></ActionForm>
                   </span>
                 </td>
               </tr>

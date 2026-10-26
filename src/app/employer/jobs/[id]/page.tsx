@@ -56,7 +56,7 @@ export default async function EmployerJob({ params }: PageProps<"/employer/jobs/
 
             {deciding && (
               <div className="grid lg:grid-cols-3 gap-4 pt-3 border-t border-[var(--line)]">
-                <ActionForm action={employerInterview.bind(null, p.id)} submit="Request interview" buttonClass="btn" className="grid gap-2">
+                <ActionForm confirm="Request an interview with this candidate? The candidate is told." action={employerInterview.bind(null, p.id)} submit="Request interview" buttonClass="btn" className="grid gap-2">
                   <div className="h2">Interview</div>
                   <input name="scheduled_at" type="datetime-local" required className="input" aria-label="Interview date and time" />
                   <input name="location" placeholder="Place or video link" className="input" />
@@ -65,7 +65,7 @@ export default async function EmployerJob({ params }: PageProps<"/employer/jobs/
                   <div className="h2">Select</div>
                   <input name="notes" placeholder="Note for the agency (optional)" className="input" />
                 </ActionForm>
-                <ActionForm action={employerReject.bind(null, p.id)} submit="Decline" buttonClass="btn btn-danger" className="grid gap-2">
+                <ActionForm confirm="Decline this candidate? The agency is told." action={employerReject.bind(null, p.id)} submit="Decline" buttonClass="btn btn-danger" className="grid gap-2">
                   <div className="h2">Decline</div>
                   <input name="notes" placeholder="Reason (required)" required className="input" />
                 </ActionForm>

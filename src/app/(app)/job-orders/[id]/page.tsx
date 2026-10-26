@@ -57,7 +57,7 @@ export default async function JobOrder({ params }: PageProps<"/job-orders/[id]">
         <div className="card grid gap-3">
           <div className="alert">The employer asked for these workers. Check the details, choose how it is paid, then approve to open the job order.</div>
           {can(ctx.role, "joborders:write") && (
-            <ActionForm action={approveJobOrder.bind(null, j.id)} submit="Approve and open" resetOnSuccess={false}>
+            <ActionForm confirm="Approve this job order and open it for matching?" action={approveJobOrder.bind(null, j.id)} submit="Approve and open" resetOnSuccess={false}>
               <div className="grid sm:grid-cols-3 gap-3">
                 <div><label className="label" htmlFor="payment_model">Who pays the costs</label><select id="payment_model" name="payment_model" className="select" defaultValue="employer_paid"><option value="employer_paid">Employer (agency fronts costs)</option><option value="candidate_paid">Candidate pays</option></select></div>
                 <div><label className="label" htmlFor="fee">Placement fee per worker</label><input id="fee" name="fee" placeholder="0.00" className="input" /></div>
@@ -78,8 +78,8 @@ export default async function JobOrder({ params }: PageProps<"/job-orders/[id]">
                   <td className="text-right whitespace-nowrap">
                     {can(ctx.role, "pipeline:move") && (
                       <span className="inline-flex gap-1">
-                        {a.free && <ActionForm action={decideApplication.bind(null, a.id, "shortlisted", j.id)} submit="Shortlist" buttonClass="btn btn-sm btn-primary" className="inline"><></></ActionForm>}
-                        <ActionForm action={decideApplication.bind(null, a.id, "declined", j.id)} submit="Decline" buttonClass="btn btn-sm" className="inline"><></></ActionForm>
+                        {a.free && <ActionForm confirm="Shortlist this applicant? They are matched to the job and told." action={decideApplication.bind(null, a.id, "shortlisted", j.id)} submit="Shortlist" buttonClass="btn btn-sm btn-primary" className="inline"><></></ActionForm>}
+                        <ActionForm confirm="Decline this application? The candidate is told." action={decideApplication.bind(null, a.id, "declined", j.id)} submit="Decline" buttonClass="btn btn-sm" className="inline"><></></ActionForm>
                       </span>
                     )}
                     {!a.free && <span className="muted text-xs">already on another job</span>}

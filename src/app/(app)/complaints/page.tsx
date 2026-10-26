@@ -60,8 +60,8 @@ export default async function Complaints() {
               <div className="flex gap-2 flex-wrap">
                 {r.kind === "delete" && <ActionForm action={eraseCandidate.bind(null, r.candidate_id)} submit="Delete their information" buttonClass="btn btn-sm btn-danger" className="inline" confirm="Permanently delete this candidate's details and documents? This cannot be undone."><></></ActionForm>}
                 {r.kind === "export" && <Link className="btn btn-sm" href={`/export/candidates?from=1900-01-01`}>Open exports</Link>}
-                <ActionForm action={handleDataRequest.bind(null, r.id, "done")} submit="Mark done" buttonClass="btn btn-sm" className="inline"><></></ActionForm>
-                <ActionForm action={handleDataRequest.bind(null, r.id, "declined")} submit="Decline" buttonClass="btn btn-sm" className="inline"><></></ActionForm>
+                <ActionForm confirm="Mark this request as done? The candidate is told." action={handleDataRequest.bind(null, r.id, "done")} submit="Mark done" buttonClass="btn btn-sm" className="inline"><></></ActionForm>
+                <ActionForm confirm="Decline this request? The candidate is told." action={handleDataRequest.bind(null, r.id, "declined")} submit="Decline" buttonClass="btn btn-sm" className="inline"><></></ActionForm>
               </div>
             ) : <span className={`badge ${r.status === "done" ? "badge-good" : r.status === "open" ? "badge-warn" : ""}`}>{r.status}</span>}
           </div>

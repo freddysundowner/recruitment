@@ -36,7 +36,7 @@ export default async function Payments({ params }: PageProps<"/c/[slug]/payments
           <div className="h2">Pay with M-Pesa</div>
           <p className="muted text-sm">{formatMoney(d.due)} is due now. You will get a prompt on your phone to enter your M-Pesa PIN.</p>
           {pending && <div className="badge badge-warn w-fit">A payment of {formatMoney(pending.amount_minor)} is waiting for your PIN</div>}
-          <ActionForm action={portalPay.bind(null, slug, d.p.id)} submit="Pay now" resetOnSuccess={false}>
+          <ActionForm confirm="Send an M-Pesa payment request to your phone now?" action={portalPay.bind(null, slug, d.p.id)} submit="Pay now" resetOnSuccess={false}>
             <div className="grid grid-cols-2 gap-3">
               <div><label className="label" htmlFor="phone">M-Pesa number</label><input id="phone" name="phone" type="tel" defaultValue={me.phone} className="input !py-3" /></div>
               <div><label className="label" htmlFor="amount">Amount (KES)</label><input id="amount" name="amount" defaultValue={Math.ceil(d.due / 100)} className="input !py-3" /></div>

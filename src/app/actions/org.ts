@@ -81,7 +81,7 @@ export async function setVetted(employerId: string, vetted: boolean, _: FormStat
     }
     revalidatePath(`/employers/${employerId}`);
     revalidatePath("/employers");
-    return { ok: vetted ? "Marked as vetted" : "Vetting removed", next: vetted ? steps.employerVetted(employerId) : undefined };
+    return { ok: vetted ? "Marked as vetted" : "Vetting removed", next: vetted ? steps.employerVetted(employerId) : steps.employerUnvetted(employerId) };
   } catch (e) {
     unstable_rethrow(e);
     return fail(e);
@@ -136,7 +136,7 @@ export async function setJobOrderStatus(id: string, status: "open" | "closed", _
     }
     revalidatePath(`/job-orders/${id}`);
     revalidatePath("/job-orders");
-    return { ok: status === "closed" ? "Closed" : "Reopened" };
+    return { ok: status === "closed" ? "Closed" : "Reopened", next: steps.jobOrderStatus(id, status) };
   } catch (e) {
     unstable_rethrow(e);
     return fail(e);
@@ -189,7 +189,7 @@ export async function setUserStatus(userId: string, status: "active" | "disabled
       return fail(e);
     }
     revalidatePath("/settings", "layout");
-    return { ok: "Updated" };
+    return { ok: "Updated", next: steps.userStatus(status === "active") };
   } catch (e) {
     unstable_rethrow(e);
     return fail(e);
@@ -213,7 +213,7 @@ export async function setFeeCap(_: FormState, fd: FormData): Promise<FormState> 
       return fail(e);
     }
     revalidatePath("/settings", "layout");
-    return { ok: "Saved" };
+    return { ok: "Saved", next: steps.settingsSaved("fees") };
   } catch (e) {
     unstable_rethrow(e);
     return fail(e);
@@ -237,7 +237,7 @@ export async function saveGeneral(_: FormState, fd: FormData): Promise<FormState
     const portal = fd.get("candidate_portal") === "on";
     if (portal && !(await getAccess(ctx.tenantId)).features.candidate_portal) return { error: "The candidate portal is not part of your plan. Upgrade on the Billing page." };
     await mergeSettings(ctx, { brand_name: field(fd, "brand_name"), brand_color: color, candidate_portal: portal }, "settings.general", { portal });
-    return { ok: "Saved" };
+    return { ok: "Saved", next: steps.settingsSaved("general") };
   } catch (e) {
     unstable_rethrow(e);
     return fail(e);
@@ -251,7 +251,7 @@ export async function saveMessaging(_: FormState, fd: FormData): Promise<FormSta
     if (channels.length === 0) return { error: "Choose at least one way to message candidates." };
     if (channels.includes("whatsapp") && !(await getAccess(ctx.tenantId)).features.whatsapp) return { error: "WhatsApp messaging is not part of your plan. Upgrade on the Billing page." };
     await mergeSettings(ctx, { notify_channels: channels }, "settings.messaging", { channels });
-    return { ok: "Saved" };
+    return { ok: "Saved", next: steps.settingsSaved("messages") };
   } catch (e) {
     unstable_rethrow(e);
     return fail(e);
@@ -263,7 +263,7 @@ export async function saveSecurity(_: FormState, fd: FormData): Promise<FormStat
     const ctx = await requireCan("users:manage");
     const require2fa = fd.get("require_2fa") === "on";
     await mergeSettings(ctx, { require_2fa: require2fa }, "settings.security", { require2fa });
-    return { ok: require2fa ? "Two-step sign-in is now required for everyone" : "Saved" };
+    return { ok: require2fa ? "Two-step sign-in is now required for everyone" : "Saved", next: steps.settingsSaved("security") };
   } catch (e) {
     unstable_rethrow(e);
     return fail(e);

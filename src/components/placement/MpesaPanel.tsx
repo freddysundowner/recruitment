@@ -49,7 +49,7 @@ export async function MpesaPanel({ placementId, tenantId, canEdit, candidatePhon
         </table>
       )}
       {canEdit && (
-        <ActionForm action={startStk.bind(null, placementId)} submit="Send M-Pesa request" className="grid gap-3 pt-2 border-t border-[var(--line)]">
+        <ActionForm confirm="Send an M-Pesa payment request to this phone number now?" action={startStk.bind(null, placementId)} submit="Send M-Pesa request" className="grid gap-3 pt-2 border-t border-[var(--line)]">
           <div className="grid sm:grid-cols-3 gap-3 items-end">
             <div><label className="label" htmlFor="mp_phone">Customer&apos;s M-Pesa number</label><input id="mp_phone" name="phone" defaultValue={candidatePhone} className="input" /></div>
             <div><label className="label" htmlFor="mp_amount">Amount (KES){d.due > 0 ? `, due now ${formatMoney(d.due)}` : ""}</label><input id="mp_amount" name="amount" defaultValue={suggested} className="input" /></div>

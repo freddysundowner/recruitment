@@ -59,7 +59,7 @@ export default async function Billing({ searchParams }: PageProps<"/billing">) {
         <p className="muted text-sm">Paying extends your plan from the day your current period ends, so nothing is lost by paying early. Changing plan takes effect straight away.</p>
         <div className="grid lg:grid-cols-2 gap-4">
           {canMpesa && (
-            <ActionForm action={payWithMpesa} submit="Pay with M-Pesa" className="grid gap-3" resetOnSuccess={false}>
+            <ActionForm confirm="Send an M-Pesa payment request to this phone number now?" action={payWithMpesa} submit="Pay with M-Pesa" className="grid gap-3" resetOnSuccess={false}>
               <div className="h2">M-Pesa {mockMode() && <span className="badge badge-warn">demo</span>}</div>
               <div className="grid grid-cols-2 gap-3">
                 <div><label className="label" htmlFor="m_plan">Plan</label><select id="m_plan" name="plan" className="select" defaultValue={selected}>{d.plans.map((p) => <option key={p.code} value={p.code}>{p.name}</option>)}</select></div>

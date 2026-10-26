@@ -7,6 +7,7 @@ import { requireCtx } from "@/lib/session";
 import { can } from "@/lib/perms";
 import { audit } from "@/lib/audit";
 import { randomToken } from "@/lib/crypto";
+import { steps } from "@/lib/next-steps";
 import { fail, field, type FormState } from "@/lib/form";
 import { normalizePhone } from "@/lib/phone";
 import { mockMode, platformConfig, stkQuery } from "@/lib/mpesa";
@@ -49,7 +50,7 @@ export async function payWithMpesa(_: FormState, fd: FormData): Promise<FormStat
       return fail(e);
     }
     revalidatePath("/billing");
-    return { ok: "Check your phone and enter your M-Pesa PIN. Your plan updates as soon as the payment is confirmed." };
+    return { ok: "Check your phone and enter your M-Pesa PIN. Your plan updates as soon as the payment is confirmed.", next: steps.subscriptionPrompt() };
   } catch (e) {
     unstable_rethrow(e);
     return fail(e);
@@ -76,7 +77,7 @@ export async function checkSubscriptionStk(requestId: string, _: FormState): Pro
       return fail(e);
     }
     revalidatePath("/billing");
-    return { ok: message };
+    return { ok: message, next: steps.subscriptionChecked() };
   } catch (e) {
     unstable_rethrow(e);
     return fail(e);
@@ -101,7 +102,7 @@ export async function simulateSubscriptionStk(requestId: string, outcome: "pay" 
     }
     revalidatePath("/billing");
     revalidatePath("/", "layout");
-    return { ok: outcome === "pay" ? "Payment simulated" : "Cancellation simulated" };
+    return { ok: outcome === "pay" ? "Payment simulated" : "Cancellation simulated", next: steps.subscriptionChecked() };
   } catch (e) {
     unstable_rethrow(e);
     return fail(e);

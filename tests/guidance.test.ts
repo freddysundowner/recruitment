@@ -114,3 +114,23 @@ describe("sample data", () => {
     expect(n).toBe(0);
   });
 });
+
+describe("every action says what comes next", () => {
+  // These only show a one-time code or a sign-in form; there is nothing sensible to suggest afterwards.
+  const SILENT = new Set(["startTotp", "platformStartTotp"]);
+
+  it("each server action suggests a next step or moves the user on", async () => {
+    const { readdirSync, readFileSync } = await import("node:fs");
+    const dir = "src/app/actions";
+    const missing: string[] = [];
+    for (const f of readdirSync(dir).filter((x) => x.endsWith(".ts") && x !== "next.ts")) {
+      const parts = readFileSync(`${dir}/${f}`, "utf8").split(/^export async function /m).slice(1);
+      for (const p of parts) {
+        const name = p.slice(0, p.indexOf("("));
+        if (SILENT.has(name)) continue;
+        if (!/next:|steps\.|redirect\(/.test(p)) missing.push(`${f}:${name}`);
+      }
+    }
+    expect(missing).toEqual([]);
+  });
+});

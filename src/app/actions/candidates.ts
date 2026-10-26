@@ -120,7 +120,7 @@ export async function updateCandidate(id: string, _: FormState, fd: FormData): P
       return fail(e);
     }
     revalidatePath(`/candidates/${id}`);
-    return { ok: "Saved" };
+    return { ok: "Saved", next: steps.candidateSaved(id) };
   } catch (e) {
     unstable_rethrow(e);
     return fail(e);

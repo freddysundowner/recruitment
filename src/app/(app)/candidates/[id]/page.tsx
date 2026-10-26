@@ -86,7 +86,7 @@ export default async function Candidate({ params }: PageProps<"/candidates/[id]"
         ) : (
           <div className="flex items-center gap-3">
             <span className="muted">Not in the pipeline.</span>
-            {move && <ActionForm action={reopenCandidate.bind(null, c.id)} submit="Re-enter pipeline" buttonClass="btn btn-sm" className=""><></></ActionForm>}
+            {move && <ActionForm confirm="Put this candidate back into the pipeline at the first stage?" action={reopenCandidate.bind(null, c.id)} submit="Re-enter pipeline" buttonClass="btn btn-sm" className=""><></></ActionForm>}
           </div>
         )}
         {placements.filter((p) => p.outcome === "closed").length > 0 && (
@@ -119,7 +119,7 @@ export default async function Candidate({ params }: PageProps<"/candidates/[id]"
                       <ActionForm action={reviewDocument.bind(null, d.id, c.id, "verified")} submit="Verify" buttonClass="btn btn-sm" className="inline"><></></ActionForm>
                     )}
                     {verify && d.status === "pending" && (
-                      <ActionForm action={reviewDocument.bind(null, d.id, c.id, "rejected")} submit="Reject" buttonClass="btn btn-sm btn-danger" className="inline ml-1"><></></ActionForm>
+                      <ActionForm confirm="Reject this document? The candidate will be asked to send a new one." action={reviewDocument.bind(null, d.id, c.id, "rejected")} submit="Reject" buttonClass="btn btn-sm btn-danger" className="inline ml-1"><></></ActionForm>
                     )}
                   </td>
                 </tr>

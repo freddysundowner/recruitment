@@ -105,7 +105,7 @@ export async function setAppointmentResult(id: string, placementId: string, resu
       return fail(e);
     }
     refresh(placementId);
-    return { ok: "Updated" };
+    return { ok: "Updated", next: steps.appointmentResult(placementId, result) };
   } catch (e) {
     unstable_rethrow(e);
     return fail(e);
@@ -163,7 +163,7 @@ export async function toggleStep(placementId: string, step: string, done: boolea
       return fail(e);
     }
     refresh(placementId);
-    return { ok: done ? "Done" : "Reopened" };
+    return { ok: done ? "Done" : "Reopened", next: steps.stepToggled(placementId, done) };
   } catch (e) {
     unstable_rethrow(e);
     return fail(e);
@@ -237,7 +237,7 @@ export async function updateComplaint(id: string, _: FormState, fd: FormData): P
       return fail(e);
     }
     revalidatePath("/complaints");
-    return { ok: "Updated" };
+    return { ok: "Updated", next: steps.complaintUpdated() };
   } catch (e) {
     unstable_rethrow(e);
     return fail(e);
@@ -312,7 +312,7 @@ export async function deleteChecklist(id: string, _: FormState): Promise<FormSta
       return fail(e);
     }
     revalidatePath("/settings", "layout");
-    return { ok: "Deleted" };
+    return { ok: "Deleted", next: steps.checklistDeleted() };
   } catch (e) {
     unstable_rethrow(e);
     return fail(e);
@@ -363,7 +363,7 @@ export async function handleDataRequest(id: string, status: "done" | "declined",
       return fail(e);
     }
     revalidatePath("/complaints");
-    return { ok: "Updated" };
+    return { ok: "Updated", next: steps.dataRequestHandled() };
   } catch (e) {
     unstable_rethrow(e);
     return fail(e);
@@ -404,7 +404,7 @@ export async function eraseCandidate(candidateId: string, _: FormState): Promise
     }
     revalidatePath("/complaints");
     revalidatePath("/candidates");
-    return { ok: "Erased" };
+    return { ok: "Erased", next: steps.candidateErased() };
   } catch (e) {
     unstable_rethrow(e);
     return fail(e);

@@ -132,7 +132,7 @@ export async function employerReject(placementId: string, _: FormState, fd: Form
       return fail(e);
     }
     revalidatePath("/employer", "layout");
-    return { ok: "Candidate declined" };
+    return { ok: "Candidate declined", next: steps.employerDeclined() };
   } catch (e) {
     unstable_rethrow(e);
     return fail(e);

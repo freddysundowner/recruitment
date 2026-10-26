@@ -74,7 +74,7 @@ export async function reverseCost(costId: string, placementId: string, _: FormSt
       return fail(e);
     }
     refresh(placementId);
-    return { ok: "Reversed" };
+    return { ok: "Reversed", next: steps.costReversed(placementId) };
   } catch (e) {
     unstable_rethrow(e);
     return fail(e);

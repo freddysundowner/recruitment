@@ -279,6 +279,167 @@ export const steps = {
     body: "Enter your M-Pesa PIN to finish. Your receipt will appear on the Payments page as soon as it is confirmed.",
     actions: [{ label: "See my payments", href: `/c/${slug}/payments`, primary: true }],
   }),
+
+  // ------------------------------------------------------------ the rest of the staff actions
+  candidateSaved: (id: string): Step => ({
+    title: "Profile saved",
+    body: "Check that their documents and job match are up to date.",
+    actions: [{ label: "Open their documents", href: `/candidates/${id}#documents`, primary: true }, { label: "Back to the candidate", href: `/candidates/${id}` }, { label: "All candidates", href: "/candidates" }],
+  }),
+  candidateReopened: (id: string): Step => ({
+    title: "Back in the pipeline",
+    body: "They are at the first stage again. Match them to a job to carry on.",
+    actions: [{ label: "Match to a job", href: `/candidates/${id}#placement`, primary: true }, { label: "See the pipeline", href: "/pipeline" }],
+  }),
+  costReversed: (placementId: string): Step => ({
+    title: "Cost reversed",
+    body: "A negative entry was added to the ledger; the original stays on record.",
+    actions: [{ label: "Add the correct cost", href: P(placementId, "#costs"), primary: true }, { label: "Back to the placement", href: P(placementId) }],
+  }),
+  mpesaChecked: (placementId: string): Step => ({
+    title: "Status checked",
+    body: "If the payment came through, a receipt was recorded. If not, ask the customer to try again.",
+    actions: [{ label: "See the payments", href: P(placementId, "#invoices"), primary: true }, { label: "Back to the placement", href: P(placementId, "#mpesa") }],
+  }),
+  appointmentResult: (placementId: string, result: string): Step => ({
+    title: "Result recorded",
+    body: result === "passed" ? "Good. If this was the last step before the next stage, you can move the placement on." : result === "pending" ? "It is back to waiting." : "Decide whether to book it again or tell the candidate.",
+    actions: [{ label: result === "passed" ? "Move to the next stage" : "Book another appointment", href: P(placementId, result === "passed" ? "#stage" : "#appointments"), primary: true }, { label: "See follow-up", href: "/follow-up" }],
+  }),
+  stepToggled: (placementId: string, done: boolean): Step => ({
+    title: done ? "Marked as done" : "Reopened",
+    body: done ? "When every step for this stage is ticked, the placement can move on." : "It no longer counts until you tick it again.",
+    actions: [{ label: "Move to the next stage", href: P(placementId, "#stage"), primary: true }, { label: "Back to the placement", href: P(placementId) }],
+  }),
+  complaintUpdated: (): Step => ({
+    title: "Complaint updated",
+    body: "The candidate is told when it is resolved. Keep going until none are left open.",
+    actions: [{ label: "Next complaint", href: "/complaints", primary: true }, { label: "Back to the dashboard", href: "/" }],
+  }),
+  checklistDeleted: (): Step => ({
+    title: "Checklist deleted",
+    body: "Candidates going to that country are no longer checked against it.",
+    actions: [{ label: "Add a checklist", href: "/settings/pipeline", primary: true }, { label: "Back to the pipeline", href: "/pipeline" }],
+  }),
+  dataRequestHandled: (): Step => ({
+    title: "Request handled",
+    body: "The candidate is told the outcome.",
+    actions: [{ label: "Back to the requests", href: "/complaints", primary: true }, { label: "See candidates", href: "/candidates" }],
+  }),
+  candidateErased: (): Step => ({
+    title: "Their information was erased",
+    body: "Personal details and documents are gone. The money records stay, without a name.",
+    actions: [{ label: "Back to the requests", href: "/complaints", primary: true }, { label: "See candidates", href: "/candidates" }],
+  }),
+  jobOrderStatus: (id: string, status: "open" | "closed"): Step => ({
+    title: status === "closed" ? "Job order closed" : "Job order reopened",
+    body: status === "closed" ? "No new candidates can be matched to it. Those already matched carry on." : "Candidates can be matched to it again.",
+    actions: status === "closed"
+      ? [{ label: "Back to job orders", href: "/job-orders", primary: true }, { label: "Create a new job order", href: "/job-orders/new" }]
+      : [{ label: "Find candidates to match", href: "/candidates", primary: true }, { label: "Open the job order", href: `/job-orders/${id}` }],
+  }),
+  employerUnvetted: (id: string): Step => ({
+    title: "Vetting removed",
+    body: "Candidates cannot move past the shortlist for this employer until it is marked as vetted again.",
+    actions: [{ label: "Record a new check", href: `/employers/${id}#checks`, primary: true }, { label: "Back to the employer", href: `/employers/${id}` }],
+  }),
+  userStatus: (active: boolean): Step => ({
+    title: active ? "Account enabled" : "Account disabled",
+    body: active ? "They can sign in again." : "They are signed out and cannot sign in. Their past work stays on record.",
+    actions: [{ label: "Back to the team", href: "/settings/team", primary: true }, { label: "Review recent activity", href: "/settings/activity" }],
+  }),
+  settingsSaved: (what: "general" | "messages" | "security" | "fees"): Step => {
+    const more: StepAction[] = [
+      { label: "Add your team", href: "/settings/team" },
+      { label: "Set up M-Pesa", href: "/settings/payments" },
+      { label: "Turn on two-step sign-in", href: "/settings/security" },
+      { label: "Review pipeline checklists", href: "/settings/pipeline" },
+    ].filter((a) => !a.href.endsWith(what));
+    return {
+      title: "Settings saved",
+      body: "The change applies straight away. Here is what else is worth setting up.",
+      actions: more.slice(0, 3).map((a, i) => ({ ...a, primary: i === 0 })),
+    };
+  },
+  employerDeclined: (): Step => ({
+    title: "Candidate declined",
+    body: "The agency has been told and will send you other candidates.",
+    actions: [{ label: "Back to your job orders", href: "/employer", primary: true }, { label: "Request more workers", href: "/employer/request" }],
+  }),
+  activationSaved: (): Step => ({
+    title: "Activation key saved",
+    body: "Your installation is active. You can add your team and start registering candidates.",
+    actions: [{ label: "Add your team", href: "/settings/team", primary: true }, { label: "Register a candidate", href: "/candidates/new" }],
+  }),
+
+  // ------------------------------------------------------------ account and billing
+  totpOn: (back: string): Step => ({
+    title: "Two-step sign-in is on",
+    body: "Close this and copy the recovery codes shown on the page before you leave it; each works once and they are not shown again.",
+    actions: [{ label: "Carry on", href: back, primary: true }],
+  }),
+  totpOff: (back: string): Step => ({
+    title: "Two-step sign-in is off",
+    body: "Your account is now protected by your password alone. Turn it back on when you can.",
+    actions: [{ label: "Turn it back on", href: "/account/security", primary: true }, { label: "Carry on", href: back }],
+  }),
+  twoStepCleared: (): Step => ({
+    title: "Two-step sign-in cleared",
+    body: "They will be asked to set it up again the next time they sign in, if your security setting requires it.",
+    actions: [{ label: "Back to the team", href: "/settings/team", primary: true }, { label: "Security settings", href: "/settings/security" }],
+  }),
+  passwordChanged: (back: string): Step => ({
+    title: "Password changed",
+    body: "Use the new password the next time you sign in.",
+    actions: [{ label: "Carry on", href: back, primary: true }],
+  }),
+  subscriptionPrompt: (): Step => ({
+    title: "Check your phone",
+    body: "Enter your M-Pesa PIN. Your plan updates as soon as the payment is confirmed.",
+    actions: [{ label: "Check the payment status", href: "/billing", primary: true }, { label: "Back to the dashboard", href: "/" }],
+  }),
+  subscriptionChecked: (): Step => ({
+    title: "Status checked",
+    body: "If the payment went through, your plan is already updated.",
+    actions: [{ label: "See my plan", href: "/billing", primary: true }, { label: "Back to the dashboard", href: "/" }],
+  }),
+
+  // ------------------------------------------------------------ platform console
+  tenantUpdated: (tenantId: string, what: string): Step => ({
+    title: what,
+    body: "The agency sees the change straight away, and it is recorded in their activity log.",
+    actions: [{ label: "Back to the agency", href: `/platform/tenants/${tenantId}`, primary: true }, { label: "All agencies", href: "/platform/tenants" }, { label: "See payments", href: "/platform/payments" }],
+  }),
+  planSaved: (): Step => ({
+    title: "Plan saved",
+    body: "New limits apply to agencies on this plan straight away.",
+    actions: [{ label: "Back to the plans", href: "/platform/plans", primary: true }, { label: "See agencies", href: "/platform/tenants" }],
+  }),
+  adminChanged: (what: string): Step => ({
+    title: what,
+    actions: [{ label: "Back to administrators", href: "/platform/admins", primary: true }, { label: "Platform overview", href: "/platform" }],
+  }),
+  platformSecurity: (what: string): Step => ({
+    title: what,
+    actions: [{ label: "Platform overview", href: "/platform", primary: true }, { label: "My security", href: "/platform/security" }],
+  }),
+
+  // ------------------------------------------------------------ candidate portal
+  portalWithdrawn: (slug: string): Step => ({
+    title: "Application withdrawn",
+    body: "You can apply for another job any time.",
+    actions: [{ label: "See open jobs", href: `/c/${slug}/jobs`, primary: true }, { label: "Back to my progress", href: `/c/${slug}/home` }],
+  }),
+  portalProfileSaved: (slug: string): Step => ({
+    title: "Profile saved",
+    body: "A complete profile helps the agency place you sooner.",
+    actions: [{ label: "Send my documents", href: `/c/${slug}/documents`, primary: true }, { label: "See open jobs", href: `/c/${slug}/jobs` }],
+  }),
+  portalRequestSent: (slug: string): Step => ({
+    title: "Request sent",
+    body: "The agency will answer it, and you will be sent a message.",
+    actions: [{ label: "Back to my progress", href: `/c/${slug}/home`, primary: true }],
+  }),
 };
 
 export type NextKey = "candidate_created" | "employer_created" | "job_order_created" | "welcome" | "request_sent" | "portal_welcome";

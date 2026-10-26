@@ -1,8 +1,9 @@
 "use client";
 
-import { startTransition, useActionState, useEffect, useRef } from "react";
+import { startTransition, useActionState, useEffect, useRef, useState } from "react";
 import type { FormState } from "@/lib/form";
 import { emitNext } from "@/lib/next-bus";
+import { ConfirmDialog } from "./ConfirmDialog";
 
 type Props = {
   action: (prev: FormState, fd: FormData) => Promise<FormState>;
@@ -28,6 +29,7 @@ export function ActionForm({ action, children, submit, className, buttonClass = 
     return r;
   }, undefined);
   const ref = useRef<HTMLFormElement>(null);
+  const [asking, setAsking] = useState<FormData | null>(null);
   useEffect(() => {
     if (state?.ok && resetOnSuccess) ref.current?.reset();
   }, [state, resetOnSuccess]);
@@ -40,8 +42,8 @@ export function ActionForm({ action, children, submit, className, buttonClass = 
       className={className ?? "grid gap-3"}
       onSubmit={(e) => {
         e.preventDefault();
-        if (confirm && !window.confirm(confirm)) return;
         const data = new FormData(e.currentTarget);
+        if (confirm) { setAsking(data); return; }
         startTransition(() => run(data));
       }}
     >
@@ -49,6 +51,15 @@ export function ActionForm({ action, children, submit, className, buttonClass = 
       {state?.ok && <div className="badge badge-good w-fit col-span-full">{state.ok}</div>}
       {state?.data && (
         <pre className="col-span-full bg-[#f1f3f6] rounded-lg p-3 text-xs whitespace-pre-wrap select-all">{state.data.join("\n")}</pre>
+      )}
+      {asking && (
+        <ConfirmDialog
+          message={confirm!}
+          confirmLabel={submit ?? "Yes, continue"}
+          danger={buttonClass.includes("btn-danger")}
+          onCancel={() => setAsking(null)}
+          onConfirm={() => { const d = asking; setAsking(null); startTransition(() => run(d)); }}
+        />
       )}
       {children}
       {submit && (

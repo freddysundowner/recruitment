@@ -83,7 +83,7 @@ export default async function Placement({ params }: PageProps<"/placements/[id]"
         </ol>
         <p className="muted mb-3">{p.description}</p>
         {move && (
-          <ActionForm action={moveStageAction.bind(null, p.id)} submit="Move" className="grid gap-3 sm:grid-cols-[220px_1fr_auto] items-end">
+          <ActionForm confirm="Move this candidate to the chosen stage? The candidate and the employer may be messaged automatically." action={moveStageAction.bind(null, p.id)} submit="Move" className="grid gap-3 sm:grid-cols-[220px_1fr_auto] items-end">
             <div>
               <label className="label" htmlFor="stage_id">Move to</label>
               <select id="stage_id" name="stage_id" className="select" defaultValue={stages.find((s) => s.position === p.position + 1)?.id ?? ""}>
@@ -141,7 +141,7 @@ export default async function Placement({ params }: PageProps<"/placements/[id]"
               </table>
             </div>
             {write && (
-              <ActionForm action={addCost.bind(null, p.id)} submit="Add cost" className="grid gap-3 mt-3 pt-3 border-t border-[var(--line)]">
+              <ActionForm confirm="Record this cost? Costs cannot be edited or deleted later, only reversed." action={addCost.bind(null, p.id)} submit="Add cost" className="grid gap-3 mt-3 pt-3 border-t border-[var(--line)]">
                 <div className="grid sm:grid-cols-5 gap-3">
                   <div><label className="label" htmlFor="category">Category</label><select id="category" name="category" className="select">{COST_CATEGORIES.map((c) => <option key={c}>{c}</option>)}</select></div>
                   <div><label className="label" htmlFor="amount">Amount</label><input id="amount" name="amount" required placeholder="4500.00" className="input" /></div>
@@ -167,7 +167,7 @@ export default async function Placement({ params }: PageProps<"/placements/[id]"
                 </tbody>
               </table>
               {write && (
-                <ActionForm action={addFeeCharge.bind(null, p.id)} submit="Add fee" className="grid gap-3 mt-3 pt-3 border-t border-[var(--line)]">
+                <ActionForm confirm="Add this fee? The candidate is reminded about it before it is due." action={addFeeCharge.bind(null, p.id)} submit="Add fee" className="grid gap-3 mt-3 pt-3 border-t border-[var(--line)]">
                   <div className="grid sm:grid-cols-3 gap-3">
                     <div><label className="label" htmlFor="fee_type">Fee type</label><select id="fee_type" name="fee_type" className="select">{FEE_TYPES.map((f) => <option key={f}>{f}</option>)}</select></div>
                     <div><label className="label" htmlFor="fee_amount">Amount (KES)</label><input id="fee_amount" name="amount" required className="input" /></div>
@@ -208,7 +208,7 @@ export default async function Placement({ params }: PageProps<"/placements/[id]"
             </table>
             {write && (
               <div className="grid lg:grid-cols-2 gap-4 mt-4 pt-4 border-t border-[var(--line)]">
-                <ActionForm action={recordPayment.bind(null, p.id)} submit="Record payment" className="grid gap-3">
+                <ActionForm confirm="Record this payment and issue a receipt? The candidate may be messaged." action={recordPayment.bind(null, p.id)} submit="Record payment" className="grid gap-3">
                   <div className="h2">Record a payment</div>
                   <div className="grid grid-cols-2 gap-3">
                     <div><label className="label" htmlFor="party">Paid by</label><select id="party" name="party" className="select"><option value="candidate">Candidate</option><option value="employer">Employer</option></select></div>
@@ -226,7 +226,7 @@ export default async function Placement({ params }: PageProps<"/placements/[id]"
                   </div>
                 </ActionForm>
                 {p.payment_model === "employer_paid" && (
-                  <ActionForm action={raiseInvoice.bind(null, p.id)} submit="Raise invoice" className="grid gap-3">
+                  <ActionForm confirm="Raise this invoice to the employer? It cannot be edited afterwards." action={raiseInvoice.bind(null, p.id)} submit="Raise invoice" className="grid gap-3">
                     <div className="h2">Raise an invoice to the employer</div>
                     <p className="muted text-xs">
                       Costs so far {formatMoney(costTotal)}

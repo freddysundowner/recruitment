@@ -26,10 +26,10 @@ export default async function Jobs({ params }: PageProps<"/c/[slug]/jobs">) {
             {st && st !== "withdrawn" ? (
               <div className="flex items-center gap-3">
                 <span className={`badge ${st === "shortlisted" ? "badge-good" : st === "declined" ? "badge-bad" : "badge-warn"}`}>{st === "pending" ? "Applied, waiting for the agency" : st}</span>
-                {st === "pending" && <ActionForm action={withdrawApplication.bind(null, slug, j.id)} submit="Withdraw" buttonClass="btn btn-sm" className="inline"><></></ActionForm>}
+                {st === "pending" && <ActionForm confirm="Withdraw your application for this job?" action={withdrawApplication.bind(null, slug, j.id)} submit="Withdraw" buttonClass="btn btn-sm" className="inline"><></></ActionForm>}
               </div>
             ) : (
-              <ActionForm action={applyToJob.bind(null, slug, j.id)} submit="Apply for this job" className="" resetOnSuccess={false}><></></ActionForm>
+              <ActionForm confirm="Apply for this job? The agency will see your profile and documents." action={applyToJob.bind(null, slug, j.id)} submit="Apply for this job" className="" resetOnSuccess={false}><></></ActionForm>
             )}
           </div>
         );

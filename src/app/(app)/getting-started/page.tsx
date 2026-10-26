@@ -32,7 +32,7 @@ export default async function GettingStarted() {
               <Link href="/pipeline" className="btn btn-primary w-fit">Open the pipeline <ArrowRight size={15} /></Link>
             </>
           ) : admin ? (
-            <ActionForm action={loadSampleData} submit="Load sample data" resetOnSuccess={false}><></></ActionForm>
+            <ActionForm confirm="Add sample candidates, employers and job orders to your workspace? You can remove them at any time." action={loadSampleData} submit="Load sample data" resetOnSuccess={false}><></></ActionForm>
           ) : <p className="muted">Ask your agency admin to load the sample data.</p>}
         </section>
 

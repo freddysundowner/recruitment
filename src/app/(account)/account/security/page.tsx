@@ -50,7 +50,7 @@ export default async function Security({ searchParams }: PageProps<"/account/sec
           </div>
         )}
         {u.totp_enabled && !u.required && (
-          <ActionForm action={disableTotp} submit="Turn off" buttonClass="btn btn-danger" resetOnSuccess={true}>
+          <ActionForm confirm="Turn off two-step sign-in? Your account will be protected by your password alone." action={disableTotp} submit="Turn off" buttonClass="btn btn-danger" resetOnSuccess={true}>
             <div className="max-w-xs"><label className="label" htmlFor="password">Confirm with your password</label><input id="password" name="password" type="password" required className="input" /></div>
           </ActionForm>
         )}
