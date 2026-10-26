@@ -1,4 +1,46 @@
-# Installing on your own server
+# Installing on a server with the scripts (recommended)
+
+For an ordinary Ubuntu or Debian server (a VPS), two scripts do everything. Copy the whole system folder to the server, then run one of them as root:
+
+```bash
+sudo ./install-saas.sh          # the shared service: many agencies sign up and pay you
+sudo ./install-standalone.sh    # one agency on its own server (the agency bought it)
+```
+
+Both ask a few questions (the domain first, `recruit.reggycodas.com` by default) and then:
+
+1. **Check the server:** root, memory, disk space, a free port. A small server without swap is offered a temporary swap file so the build does not run out of memory.
+2. **Give the system its own Node.js** under `/opt/recruit/node`, after checking whether the right version is already there. The server's own Node, and any other system on it, are not touched.
+3. **Use the server's PostgreSQL.** It is installed only if there is none. The database and its two users are created only if they do not exist; an existing database is kept as it is.
+4. **Build and start:** copy the files, install packages, build, create the tables, and run the website and the background worker as services (`recruit-<domain>-web` and `-worker`) under their own user, restarting by themselves.
+5. **nginx:** it looks for an existing `server_name` for the domain. If there is one it leaves it alone (and tells you what to point it at); otherwise it adds the server block, with the right headers and a 12 MB upload limit. nginx is installed only if missing.
+6. **SSL:** if the domain already has a certificate, none is requested. If not, and DNS points at the server, it gets a free Let's Encrypt certificate with certbot and turns on renewal. If DNS is not ready yet it tells you the one command to run later.
+7. **Backups and updates:** a nightly backup of the database and documents (14 days kept) in `/var/backups/recruit/<domain>`, and the `recruit-update` command.
+8. **Check:** it confirms the website answers, then prints what to do next.
+
+You can run an installer again at any time. It keeps your secrets, database, documents and any settings you added to the settings file (`/etc/recruit/<domain>.env`). Several installs, such as one shared service and one single-agency copy on different domains, can live on the same server; each gets its own database, folder, port and services.
+
+**For no questions at all**, give the answers as options: `sudo ./install-saas.sh --yes --domain recruit.example.com --email me@example.com --admin-email me@example.com` (with `PLATFORM_ADMIN_PASSWORD` in the environment). `./install-saas.sh --help` lists every option. If your PostgreSQL is on another machine, set `PG_ADMIN_URL`.
+
+**Copy `FIELD_ENCRYPTION_KEY`** from `/etc/recruit/<domain>.env` to your password manager when it finishes. Without it, ID and passport numbers cannot be read again.
+
+## Updating
+
+Upload the new files (a folder, or a `.tar.gz` or `.zip`) to the server and run:
+
+```bash
+sudo recruit-update /path/to/the/new/files      # add --check first to see what would change
+```
+
+`update.js` shows what will change, backs up the database, builds the new version next to the running one (the website stays up while it builds), stops the services for about half a minute to update the tables and swap, then checks the site answers. If anything fails it puts the old version back, and the old data too if it has to. Your settings, documents and database are never replaced. `sudo recruit-update --rollback` goes back to the previous version.
+
+## Removing an install
+
+`sudo ./uninstall.sh` removes the services, the nginx site and (only if you say yes to each) the files, the database and the settings. It never touches PostgreSQL itself, nginx, or other systems.
+
+---
+
+# Installing with Docker instead
 
 This guide is for putting the system on a server you control: a single agency running its own copy, or you running the shared multi-agency service. You need a Linux server (2 GB of memory is enough to start), a domain name pointing at it, and Docker with the Compose plugin.
 

@@ -86,6 +86,10 @@ If `vitest` says "Cannot find native binding" on macOS, npm skipped an optional 
 
 The front page (`/`, shown to visitors on the shared service) and the guide (`/guide`) are public and written for search engines and sharing: page titles and descriptions, a canonical address, Open Graph and Twitter share images, structured data (organisation, software with prices, FAQ, article), `sitemap.xml`, `robots.txt` and a site icon. Everything private (the app, employer pages, platform console, sign-in) is marked `noindex`. Set `APP_URL` to your real address in production so the sitemap, canonical links and share images point to it. A single-agency install is private: its robots file blocks everything and it has no sitemap. `node e2e/seo.mjs` checks all of this against a running copy.
 
+## Putting it on a server
+
+`install-saas.sh` (the shared service) and `install-standalone.sh` (one agency, on its own server) set up a whole Ubuntu or Debian VPS: a private Node.js, PostgreSQL only if missing, the database only if missing, services, nginx for the domain only if it has no server block yet, a Let's Encrypt certificate only if the domain has none, nightly backups and an update command. `update.js` (run as `recruit-update`) installs new files with a backup and an automatic rollback. See INSTALL.md.
+
 ## End-to-end test
 
 With the app running (`npm run dev`) and the demo data seeded:

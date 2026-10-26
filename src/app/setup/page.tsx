@@ -9,6 +9,9 @@ import type { Metadata } from "next";
 // Private pages: keep them out of search results.
 export const metadata: Metadata = { robots: { index: false, follow: false } };
 
+// Depends on the database, so it is built when asked for, never ahead of time.
+export const dynamic = "force-dynamic";
+
 export default async function Setup() {
   if (!isSingleInstall()) redirect("/login");
   const [{ install_has_tenant: exists }] = await sql`SELECT install_has_tenant()`;

@@ -8,7 +8,7 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 # Placeholders only so the build can import modules; the real values are supplied when the container runs.
-RUN DATABASE_URL=postgres://build:build@localhost:5432/build SESSION_SECRET=build-time-placeholder-build-time-placeholder npm run build
+RUN STANDALONE=1 DATABASE_URL=postgres://build:build@localhost:5432/build SESSION_SECRET=build-time-placeholder-build-time-placeholder npm run build
 
 # The web app
 FROM node:24-alpine AS run
