@@ -12,7 +12,7 @@ export const steps = {
   // ------------------------------------------------------------ candidates and documents
   candidateCreated: (id: string, name: string): Step => ({
     title: "Candidate registered",
-    body: `${name} is now at the first stage of your pipeline. A good next move is to collect their documents.`,
+    body: `${name} is in your pipeline. Collect their documents next.`,
     actions: [
       { label: "Upload their documents", hint: "Passport, ID, certificates", href: `/candidates/${id}#documents`, primary: true },
       { label: "Match them to a job", hint: "Pick an open job order", href: `/candidates/${id}#placement` },
@@ -22,7 +22,7 @@ export const steps = {
   }),
   importDone: (created: number): Step => ({
     title: `${created} candidate${created === 1 ? "" : "s"} imported`,
-    body: "They are all at the first stage. Check the list, then start collecting documents and matching them to jobs.",
+    body: "They are all at the first stage.",
     actions: [
       { label: "Review the new candidates", href: "/candidates", primary: true },
       { label: "Set up your employers and jobs", hint: "So there is something to match them to", href: "/employers" },
@@ -31,7 +31,7 @@ export const steps = {
   }),
   documentUploaded: (candidateId: string): Step => ({
     title: "Document uploaded",
-    body: "It is waiting to be checked. Open it, compare it with the candidate, then verify or reject it.",
+    body: "It is waiting to be checked.",
     actions: [
       { label: "Verify documents now", href: "/verify", primary: true },
       { label: "Back to the candidate", href: `/candidates/${candidateId}` },
@@ -49,7 +49,7 @@ export const steps = {
   // ------------------------------------------------------------ employers and jobs
   employerCreated: (id: string, name: string): Step => ({
     title: "Employer added",
-    body: `Before sending ${name} any candidates, record how you checked them. An employer needs a passed registration check to be marked vetted.`,
+    body: `Record how you checked ${name} before sending candidates.`,
     actions: [
       { label: "Record vetting checks", href: `/employers/${id}#checks`, primary: true },
       { label: "Give them a portal login", hint: "So they can review candidates themselves", href: `/employers/${id}#logins` },
@@ -74,7 +74,7 @@ export const steps = {
   }),
   employerLogin: (id: string): Step => ({
     title: "Portal login created",
-    body: "Share the temporary password privately. They sign in at the usual sign-in page and are taken to their own portal.",
+    body: "Share the temporary password privately.",
     actions: [
       { label: "Create a job order for them", href: "/job-orders/new", primary: true },
       { label: "Back to the employer", href: `/employers/${id}` },
@@ -82,7 +82,7 @@ export const steps = {
   }),
   jobOrderCreated: (id: string, title: string): Step => ({
     title: "Job order created",
-    body: `"${title}" is open. Match candidates to it from their profile, or let candidates apply on their portal.`,
+    body: `"${title}" is open for matching.`,
     actions: [
       { label: "Find candidates to match", href: "/candidates", primary: true },
       { label: "Share your candidate page", hint: "Candidates can apply online", href: "/settings/general" },
@@ -98,7 +98,7 @@ export const steps = {
   // ------------------------------------------------------------ pipeline
   jobAssigned: (placementId: string): Step => ({
     title: "Job order assigned",
-    body: "Now move the candidate to the Shortlist stage. That shows them to the employer and sends the employer an email.",
+    body: "Next, move them to Shortlist so the employer can see them.",
     actions: [
       { label: "Move to Shortlist", href: P(placementId, "#stage"), primary: true },
       { label: "Add documents first", hint: "So the employer sees a complete profile", href: P(placementId, "#checklist") },
@@ -109,20 +109,20 @@ export const steps = {
     const base = { title: `Moved to ${stage}`, actions: [] as StepAction[] };
     const common: StepAction[] = [{ label: "Back to the pipeline", href: "/pipeline" }];
     switch (position) {
-      case 2: return { ...base, body: "Check the candidate's ID, skills and experience. If they pay fees, add them now.", actions: [{ label: "Add a fee", href: P(placementId, "#fees"), primary: true }, { label: "Match to a job order", href: `/candidates/${candidateId}#placement` }, ...common] };
-      case 3: return { ...base, body: "The employer can now see this candidate and has been emailed. Wait for their decision, or book an interview yourself.", actions: [{ label: "Book an interview", href: P(placementId, "#appointments"), primary: true }, ...common] };
-      case 4: return { ...base, body: "Book the interview and tell the candidate. When the employer is happy, move on to the contract.", actions: [{ label: "Book an appointment", href: P(placementId, "#appointments"), primary: true }, ...common] };
-      case 5: return { ...base, body: "Record both copies of the contract: the candidate's and the employer's. If they differ, the system stops you moving on.", actions: [{ label: "Record contract copies", href: P(placementId, "#contract"), primary: true }, ...common] };
-      case 6: return { ...base, body: "Collect and verify the passport, police clearance and medical report.", actions: [{ label: "Verify documents", href: "/verify", primary: true }, { label: "See the checklist", href: P(placementId, "#checklist") }, ...common] };
-      case 7: return { ...base, body: "Record the visa application and the pre-departure orientation. Both are needed before travel.", actions: [{ label: "Record visa and travel", href: P(placementId, "#travel"), primary: true }, ...common] };
-      case 8: return { ...base, body: "The worker has travelled. Raise the employer's invoice, and follow-up check-ins have been scheduled for you.", actions: [{ label: "Raise the invoice", href: P(placementId, "#invoices"), primary: true }, { label: "See follow-up", href: "/follow-up" }, ...common] };
-      case 9: return { ...base, body: "Keep in touch with the worker. Record each check-in as it happens, and close the case when the contract is complete.", actions: [{ label: "See follow-up", href: "/follow-up", primary: true }, { label: "Open the placement", href: here }] };
+      case 2: return { ...base, body: "Check their ID and skills. Add any fees now.", actions: [{ label: "Add a fee", href: P(placementId, "#fees"), primary: true }, { label: "Match to a job order", href: `/candidates/${candidateId}#placement` }, ...common] };
+      case 3: return { ...base, body: "The employer has been told. Wait for their decision.", actions: [{ label: "Book an interview", href: P(placementId, "#appointments"), primary: true }, ...common] };
+      case 4: return { ...base, body: "Book the interview and tell the candidate.", actions: [{ label: "Book an appointment", href: P(placementId, "#appointments"), primary: true }, ...common] };
+      case 5: return { ...base, body: "Record the candidate's and the employer's contract copies.", actions: [{ label: "Record contract copies", href: P(placementId, "#contract"), primary: true }, ...common] };
+      case 6: return { ...base, body: "Verify the passport, police clearance and medical report.", actions: [{ label: "Verify documents", href: "/verify", primary: true }, { label: "See the checklist", href: P(placementId, "#checklist") }, ...common] };
+      case 7: return { ...base, body: "Record the visa and the pre-departure orientation.", actions: [{ label: "Record visa and travel", href: P(placementId, "#travel"), primary: true }, ...common] };
+      case 8: return { ...base, body: "The worker has travelled. Raise the employer's invoice.", actions: [{ label: "Raise the invoice", href: P(placementId, "#invoices"), primary: true }, { label: "See follow-up", href: "/follow-up" }, ...common] };
+      case 9: return { ...base, body: "Record each check-in as it happens.", actions: [{ label: "See follow-up", href: "/follow-up", primary: true }, { label: "Open the placement", href: here }] };
       default: return { ...base, actions: [{ label: "Open the placement", href: here, primary: true }, ...common] };
     }
   },
   placementClosed: (candidateId: string): Step => ({
     title: "Placement closed",
-    body: "The costs stay on the ledger. If the candidate is still looking, match them to another job.",
+    body: "The costs stay on the ledger.",
     actions: [{ label: "Match to another job", href: `/candidates/${candidateId}#placement`, primary: true }, { label: "Back to the pipeline", href: "/pipeline" }],
   }),
   applicationDecided: (placementId: string | null, decision: "shortlisted" | "declined"): Step =>
@@ -142,22 +142,22 @@ export const steps = {
   }),
   travelSaved: (placementId: string): Step => ({
     title: "Visa and travel saved",
-    body: "When the visa is approved and orientation is done, the placement can move on to Deployed.",
+    body: "Once the visa is approved and orientation is done, they can be deployed.",
     actions: [{ label: "Move to the next stage", href: P(placementId, "#stage"), primary: true }, { label: "Book orientation", href: P(placementId, "#appointments") }],
   }),
   appointmentAdded: (placementId: string): Step => ({
     title: "Appointment booked",
-    body: "Record the result after it happens, so the file stays up to date. Reminders go out automatically.",
+    body: "Record the result after it happens.",
     actions: [{ label: "See upcoming appointments", href: "/follow-up", primary: true }, { label: "Back to the placement", href: P(placementId) }],
   }),
   checkinDone: (): Step => ({
     title: "Check-in recorded",
-    body: "If the worker raised a concern, record it as a complaint so someone owns it.",
+    body: "If they raised a concern, record it as a complaint.",
     actions: [{ label: "See what else is due", href: "/follow-up", primary: true }, { label: "Open complaints", href: "/complaints" }],
   }),
   complaintRecorded: (): Step => ({
     title: "Complaint recorded",
-    body: "Every complaint needs an answer. Update its status as you work on it.",
+    body: "Update its status as you work on it.",
     actions: [{ label: "Open complaints", href: "/complaints", primary: true }],
   }),
 
@@ -173,12 +173,12 @@ export const steps = {
   }),
   feeAdded: (placementId: string): Step => ({
     title: "Fee added",
-    body: "The candidate is reminded before it is due. You can ask for payment by M-Pesa straight away.",
+    body: "The candidate is reminded before it is due.",
     actions: [{ label: "Ask for M-Pesa payment", href: P(placementId, "#mpesa"), primary: true }, { label: "Record a cash payment", href: P(placementId, "#invoices") }],
   }),
   invoiceRaised: (placementId: string): Step => ({
     title: "Invoice raised",
-    body: "When the employer pays, record the payment against the invoice. Partial payments are fine.",
+    body: "When the employer pays, record it against the invoice.",
     actions: [{ label: "Record a payment", href: P(placementId, "#invoices"), primary: true }, { label: "See receivables", href: "/finance" }],
   }),
   paymentRecorded: (placementId: string, receipt: string): Step => ({
@@ -188,29 +188,29 @@ export const steps = {
   }),
   mpesaRequested: (placementId: string): Step => ({
     title: "M-Pesa request sent",
-    body: "The customer will get a prompt on their phone. The payment is recorded automatically when they enter their PIN.",
+    body: "They will get a prompt on their phone.",
     actions: [{ label: "Check its status", href: P(placementId, "#mpesa"), primary: true }, { label: "Back to the pipeline", href: "/pipeline" }],
   }),
 
   // ------------------------------------------------------------ settings and team
   userAdded: (): Step => ({
     title: "Team member added",
-    body: "Ask them to sign in and turn on two-step sign-in. You can require it for everyone in Settings.",
+    body: "Ask them to sign in and turn on two-step sign-in.",
     actions: [{ label: "Require two-step sign-in", href: "/settings/security", primary: true }, { label: "Add another person", href: "/settings/team" }],
   }),
   mpesaSettingsSaved: (): Step => ({
     title: "M-Pesa is set up",
-    body: "Try it with a small amount first: open a candidate who owes a fee and ask for payment.",
+    body: "Try it with a small amount first.",
     actions: [{ label: "Open the pipeline", href: "/pipeline", primary: true }],
   }),
   checklistSaved: (): Step => ({
     title: "Checklist saved",
-    body: "It now applies to every candidate heading to that country, at the stage that checks documents.",
+    body: "It applies to every candidate going to that country.",
     actions: [{ label: "Back to the pipeline", href: "/pipeline", primary: true }, { label: "Add another country", href: "/settings/pipeline" }],
   }),
   welcome: (name: string): Step => ({
     title: `Welcome, ${name}`,
-    body: "Your workspace is ready. The quickest way to see how everything fits together is to explore with sample data, which you can remove at any time.",
+    body: "Your workspace is ready.",
     actions: [
       { label: "Explore with sample data", hint: "A few candidates, employers and jobs to click through", href: "/getting-started", primary: true },
       { label: "Start with my own candidates", href: "/candidates/import" },
@@ -219,7 +219,7 @@ export const steps = {
   }),
   sampleLoaded: (): Step => ({
     title: "Sample data is ready",
-    body: "You will find candidates at different stages, two employers and some job orders. Open the pipeline and move someone forward to see how the gates work.",
+    body: "Candidates, employers and jobs are ready to explore.",
     actions: [
       { label: "Open the pipeline", href: "/pipeline", primary: true },
       { label: "Look at the candidate portal", href: "/settings/general" },
@@ -230,29 +230,29 @@ export const steps = {
   // ------------------------------------------------------------ employer portal
   employerInterview: (): Step => ({
     title: "Interview requested",
-    body: "The candidate has been told. You will see the result here once the agency records it.",
+    body: "The candidate has been told.",
     actions: [{ label: "Back to your job orders", href: "/employer", primary: true }],
   }),
   employerSelected: (jobId: string): Step => ({
     title: "Candidate selected",
-    body: "Now record the terms of the contract you signed, so the agency can compare them with the worker's copy before travel.",
+    body: "Now record the terms of the contract you signed.",
     actions: [{ label: "Record contract terms", href: `/employer/jobs/${jobId}#contracts`, primary: true }, { label: "Back to your job orders", href: "/employer" }],
   }),
   employerContract: (): Step => ({
     title: "Contract terms recorded",
-    body: "The agency will compare them with the worker's copy. You will be told if anything differs.",
+    body: "The agency will compare them with the worker's copy.",
     actions: [{ label: "Back to your job orders", href: "/employer", primary: true }, { label: "Request more workers", href: "/employer/request" }],
   }),
   employerRequestSent: (): Step => ({
     title: "Request sent to the agency",
-    body: "The agency will check the details and agree the fee, then open the job order. You will get an email when candidates are ready to review.",
+    body: "The agency will check the details and open the job order.",
     actions: [{ label: "Back to your job orders", href: "/employer", primary: true }],
   }),
 
   // ------------------------------------------------------------ candidate portal (slug is the agency address)
   portalWelcome: (slug: string): Step => ({
     title: "You are registered",
-    body: "Next, send your documents and look at the jobs. The more complete your profile, the sooner the agency can place you.",
+    body: "Next, send your documents and look at the jobs.",
     actions: [
       { label: "Send my documents", hint: "Passport, ID, certificates", href: `/c/${slug}/documents`, primary: true },
       { label: "See open jobs", href: `/c/${slug}/jobs` },
@@ -261,22 +261,22 @@ export const steps = {
   }),
   portalDocument: (slug: string): Step => ({
     title: "Document sent",
-    body: "The agency will check it and let you know. While you wait, you can apply for jobs.",
+    body: "The agency will check it and let you know.",
     actions: [{ label: "See open jobs", href: `/c/${slug}/jobs`, primary: true }, { label: "Send another document", href: `/c/${slug}/documents` }],
   }),
   portalApplied: (slug: string): Step => ({
     title: "Application sent",
-    body: "The agency will review it. Make sure your documents are uploaded so they can move quickly.",
+    body: "The agency will review it.",
     actions: [{ label: "Check my documents", href: `/c/${slug}/documents`, primary: true }, { label: "Back to my progress", href: `/c/${slug}/home` }],
   }),
   portalComplaint: (slug: string): Step => ({
     title: "We received your complaint",
-    body: "The agency has been told. You can follow its progress on the Help page and you will be sent a message.",
+    body: "The agency has been told. You will be sent a message.",
     actions: [{ label: "Back to my progress", href: `/c/${slug}/home`, primary: true }],
   }),
   portalPay: (slug: string): Step => ({
     title: "Check your phone",
-    body: "Enter your M-Pesa PIN to finish. Your receipt will appear on the Payments page as soon as it is confirmed.",
+    body: "Enter your M-Pesa PIN to finish.",
     actions: [{ label: "See my payments", href: `/c/${slug}/payments`, primary: true }],
   }),
 
@@ -293,12 +293,12 @@ export const steps = {
   }),
   costReversed: (placementId: string): Step => ({
     title: "Cost reversed",
-    body: "A negative entry was added to the ledger; the original stays on record.",
+    body: "A reversing entry was added; the original stays on record.",
     actions: [{ label: "Add the correct cost", href: P(placementId, "#costs"), primary: true }, { label: "Back to the placement", href: P(placementId) }],
   }),
   mpesaChecked: (placementId: string): Step => ({
     title: "Status checked",
-    body: "If the payment came through, a receipt was recorded. If not, ask the customer to try again.",
+    body: "If it came through, a receipt was recorded.",
     actions: [{ label: "See the payments", href: P(placementId, "#invoices"), primary: true }, { label: "Back to the placement", href: P(placementId, "#mpesa") }],
   }),
   appointmentResult: (placementId: string, result: string): Step => ({
@@ -313,7 +313,7 @@ export const steps = {
   }),
   complaintUpdated: (): Step => ({
     title: "Complaint updated",
-    body: "The candidate is told when it is resolved. Keep going until none are left open.",
+    body: "The candidate is told when it is resolved.",
     actions: [{ label: "Next complaint", href: "/complaints", primary: true }, { label: "Back to the dashboard", href: "/" }],
   }),
   checklistDeleted: (): Step => ({
@@ -328,7 +328,7 @@ export const steps = {
   }),
   candidateErased: (): Step => ({
     title: "Their information was erased",
-    body: "Personal details and documents are gone. The money records stay, without a name.",
+    body: "Personal details and documents are gone.",
     actions: [{ label: "Back to the requests", href: "/complaints", primary: true }, { label: "See candidates", href: "/candidates" }],
   }),
   jobOrderStatus: (id: string, status: "open" | "closed"): Step => ({
@@ -340,7 +340,7 @@ export const steps = {
   }),
   employerUnvetted: (id: string): Step => ({
     title: "Vetting removed",
-    body: "Candidates cannot move past the shortlist for this employer until it is marked as vetted again.",
+    body: "Candidates cannot pass the shortlist until it is vetted again.",
     actions: [{ label: "Record a new check", href: `/employers/${id}#checks`, primary: true }, { label: "Back to the employer", href: `/employers/${id}` }],
   }),
   userStatus: (active: boolean): Step => ({
@@ -357,7 +357,7 @@ export const steps = {
     ].filter((a) => !a.href.endsWith(what === "rules" ? "pipeline" : what));
     return {
       title: "Settings saved",
-      body: "The change applies straight away. Here is what else is worth setting up.",
+      body: "It applies straight away.",
       actions: more.slice(0, 3).map((a, i) => ({ ...a, primary: i === 0 })),
     };
   },
@@ -368,24 +368,24 @@ export const steps = {
   }),
   activationSaved: (): Step => ({
     title: "Activation key saved",
-    body: "Your installation is active. You can add your team and start registering candidates.",
+    body: "Your installation is active.",
     actions: [{ label: "Add your team", href: "/settings/team", primary: true }, { label: "Register a candidate", href: "/candidates/new" }],
   }),
 
   // ------------------------------------------------------------ account and billing
   totpOn: (back: string): Step => ({
     title: "Two-step sign-in is on",
-    body: "Close this and copy the recovery codes shown on the page before you leave it; each works once and they are not shown again.",
+    body: "Copy the recovery codes shown on the page. They are not shown again.",
     actions: [{ label: "Carry on", href: back, primary: true }],
   }),
   totpOff: (back: string): Step => ({
     title: "Two-step sign-in is off",
-    body: "Your account is now protected by your password alone. Turn it back on when you can.",
+    body: "Your account is protected by your password alone.",
     actions: [{ label: "Turn it back on", href: "/account/security", primary: true }, { label: "Carry on", href: back }],
   }),
   twoStepCleared: (): Step => ({
     title: "Two-step sign-in cleared",
-    body: "They will be asked to set it up again the next time they sign in, if your security setting requires it.",
+    body: "They can set it up again when they next sign in.",
     actions: [{ label: "Back to the team", href: "/settings/team", primary: true }, { label: "Security settings", href: "/settings/security" }],
   }),
   passwordChanged: (back: string): Step => ({
@@ -395,7 +395,7 @@ export const steps = {
   }),
   subscriptionPrompt: (): Step => ({
     title: "Check your phone",
-    body: "Enter your M-Pesa PIN. Your plan updates as soon as the payment is confirmed.",
+    body: "Enter your M-Pesa PIN. Your plan updates when it is confirmed.",
     actions: [{ label: "Check the payment status", href: "/billing", primary: true }, { label: "Back to the dashboard", href: "/" }],
   }),
   subscriptionChecked: (): Step => ({
@@ -407,7 +407,7 @@ export const steps = {
   // ------------------------------------------------------------ platform console
   tenantUpdated: (tenantId: string, what: string): Step => ({
     title: what,
-    body: "The agency sees the change straight away, and it is recorded in their activity log.",
+    body: "The agency sees it straight away.",
     actions: [{ label: "Back to the agency", href: `/platform/tenants/${tenantId}`, primary: true }, { label: "All agencies", href: "/platform/tenants" }, { label: "See payments", href: "/platform/payments" }],
   }),
   planSaved: (): Step => ({

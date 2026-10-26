@@ -18,7 +18,7 @@ export function NextStepDialog({ step, onClose }: { step: Step; onClose: () => v
       <div className="dlg-body">
         <div className="dlg-icon"><CheckCircle2 size={24} /></div>
         <h2 id="dlg-title" className="h1" style={{ fontSize: 19 }}>{step.title}</h2>
-        {step.body && <p className="muted mt-1.5">{step.body}</p>}
+        {step.body && <p className="muted mt-1">{step.body}</p>}
       </div>
       <div className="dlg-actions">
         <div className="eyebrow mb-0.5">What would you like to do next?</div>
