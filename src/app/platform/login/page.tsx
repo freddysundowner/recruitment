@@ -4,6 +4,11 @@ import { getPlatformAdmin } from "@/lib/platform";
 import { ActionForm } from "@/components/ActionForm";
 import { platformLogin } from "@/app/actions/platform";
 
+import type { Metadata } from "next";
+
+// Private pages: keep them out of search results.
+export const metadata: Metadata = { robots: { index: false, follow: false } };
+
 export default async function PlatformLogin() {
   if (isSingleInstall()) notFound();
   if (await getPlatformAdmin()) redirect("/platform");

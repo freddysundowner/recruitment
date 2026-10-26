@@ -10,6 +10,11 @@ import { NextStepHost } from "@/components/NextStepHost";
 import { logout } from "../actions/auth";
 import { exitSupport } from "../actions/platform";
 
+import type { Metadata } from "next";
+
+// Private pages: keep them out of search results.
+export const metadata: Metadata = { robots: { index: false, follow: false } };
+
 export default async function AppLayout({ children }: LayoutProps<"/">) {
   const ctx = await requireCtx();
   if (ctx.role === "employer") redirect("/employer");

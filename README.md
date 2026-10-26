@@ -81,6 +81,10 @@ npm test
 
 If `vitest` says "Cannot find native binding" on macOS, npm skipped an optional package: `npm i -D --no-save @rolldown/binding-darwin-x64` (or `-arm64`).
 
+## Marketing page, guide and search engines
+
+The front page (`/`, shown to visitors on the shared service) and the guide (`/guide`) are public and written for search engines and sharing: page titles and descriptions, a canonical address, Open Graph and Twitter share images, structured data (organisation, software with prices, FAQ, article), `sitemap.xml`, `robots.txt` and a site icon. Everything private (the app, employer pages, platform console, sign-in) is marked `noindex`. Set `APP_URL` to your real address in production so the sitemap, canonical links and share images point to it. A single-agency install is private: its robots file blocks everything and it has no sitemap. `node e2e/seo.mjs` checks all of this against a running copy.
+
 ## End-to-end test
 
 With the app running (`npm run dev`) and the demo data seeded:

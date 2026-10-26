@@ -4,6 +4,11 @@ import { isSingleInstall } from "@/lib/plan";
 import { ActionForm } from "@/components/ActionForm";
 import { runSetup } from "../actions/setup";
 
+import type { Metadata } from "next";
+
+// Private pages: keep them out of search results.
+export const metadata: Metadata = { robots: { index: false, follow: false } };
+
 export default async function Setup() {
   if (!isSingleInstall()) redirect("/login");
   const [{ install_has_tenant: exists }] = await sql`SELECT install_has_tenant()`;

@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import {
   BarChart3, Briefcase, Building2, CalendarCheck, ChevronDown, CreditCard, FileCheck2, KanbanSquare, LayoutDashboard,
-  ListChecks, LogOut, Mail, Menu, MessageSquareWarning, Search, Settings, ShieldCheck, Users, Wallet, X,
+  BookOpen, ListChecks, LogOut, Mail, Menu, MessageSquareWarning, Search, Settings, ShieldCheck, Users, Wallet, X,
 } from "lucide-react";
 
 const ICONS = {
@@ -84,6 +84,7 @@ export function AppShell({ groups, brand, user, logout, children }: Props) {
                 <ChevronDown size={15} className="muted" />
               </summary>
               <div className="menu-panel">
+                <Link href="/guide" className="menu-item"><BookOpen size={16} /> How to use this</Link>
                 <Link href="/account/security" className="menu-item"><ShieldCheck size={16} /> Account security</Link>
                 <form action={logout}><button className="menu-item"><LogOut size={16} /> Sign out</button></form>
               </div>

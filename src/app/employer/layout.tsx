@@ -7,6 +7,11 @@ import { Suspense } from "react";
 import { NextStepHost } from "@/components/NextStepHost";
 import { logout } from "../actions/auth";
 
+import type { Metadata } from "next";
+
+// Private pages: keep them out of search results.
+export const metadata: Metadata = { robots: { index: false, follow: false } };
+
 export default async function EmployerLayout({ children }: LayoutProps<"/employer">) {
   const ctx = await requireCtx();
   if (ctx.role !== "employer" || !ctx.employerId) redirect("/");

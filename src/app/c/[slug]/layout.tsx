@@ -4,6 +4,11 @@ import { Suspense } from "react";
 import { NextStepHost } from "@/components/NextStepHost";
 import { candidateLogout } from "@/app/actions/portal";
 
+import type { Metadata } from "next";
+
+// Private pages: keep them out of search results.
+export const metadata: Metadata = { robots: { index: false, follow: false } };
+
 export default async function PortalLayout({ children, params }: LayoutProps<"/c/[slug]">) {
   const { slug } = await params;
   const agency = await requireAgency(slug);

@@ -3,6 +3,11 @@ import { Suspense } from "react";
 import { NextStepHost } from "@/components/NextStepHost";
 import { requireCtx } from "@/lib/session";
 
+import type { Metadata } from "next";
+
+// Private pages: keep them out of search results.
+export const metadata: Metadata = { robots: { index: false, follow: false } };
+
 export default async function AccountLayout({ children }: LayoutProps<"/">) {
   const ctx = await requireCtx();
   return (

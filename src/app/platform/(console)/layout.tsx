@@ -6,6 +6,11 @@ import { isSingleInstall } from "@/lib/plan";
 import { requirePlatform } from "@/lib/platform";
 import { platformLogout } from "@/app/actions/platform";
 
+import type { Metadata } from "next";
+
+// Private pages: keep them out of search results.
+export const metadata: Metadata = { robots: { index: false, follow: false } };
+
 export default async function ConsoleLayout({ children }: LayoutProps<"/platform">) {
   if (isSingleInstall()) notFound(); // a single install has no platform layer
   const admin = await requirePlatform();
