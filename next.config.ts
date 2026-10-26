@@ -1,9 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
-  cacheComponents: true,
-  partialPrefetching: true,
+  output: "standalone",
+  devIndicators: false,
+  // Lets a second copy run side by side while testing (for example a single-install trial).
+  distDir: process.env.NEXT_DIST_DIR || ".next",
   turbopack: {
     rules: {
       "*.css": {
@@ -12,6 +13,7 @@ const nextConfig: NextConfig = {
       },
     },
   },
+  serverExternalPackages: ["postgres"],
 };
 
 export default nextConfig;
