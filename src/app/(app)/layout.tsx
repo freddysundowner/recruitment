@@ -22,7 +22,8 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
       SELECT (SELECT count(*) FROM documents WHERE status = 'pending') AS docs,
              (SELECT count(*) FROM complaints WHERE status <> 'resolved') AS complaints,
              (SELECT count(*) FROM checkins WHERE done_on IS NULL AND due_on < current_date) AS checkins,
-             (SELECT count(*) FROM messages WHERE status = 'failed') AS failed`;
+             (SELECT count(*) FROM messages WHERE status = 'failed') AS failed,
+             (SELECT sms_credits FROM tenants WHERE id = ${ctx.tenantId}) AS credits`;
     return { brand: (t.settings?.brand_name as string) || (t.name as string), color: t.settings?.brand_color as string | undefined, n };
   });
   const color = /^#[0-9a-f]{6}$/i.test(info.color ?? "") ? info.color : undefined;
@@ -88,6 +89,11 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
         )}
         {!access.singleInstall && access.status === "trialing" && access.daysLeft > 0 && access.daysLeft <= 7 && admin && (
           <div className="notice">Your free trial ends in {access.daysLeft} day{access.daysLeft === 1 ? "" : "s"}. <Link className="underline font-semibold" href="/billing">Choose a plan</Link></div>
+        )}
+        {!access.singleInstall && admin && !ctx.support && Number(info.n.credits) <= 5 && (
+          <div className={Number(info.n.credits) === 0 ? "alert" : "notice"}>
+            {Number(info.n.credits) === 0 ? "You are out of SMS credits, so texts to candidates are not being sent." : `You have ${Number(info.n.credits)} SMS credit${Number(info.n.credits) === 1 ? "" : "s"} left.`} <Link className="underline font-semibold" href="/billing#credits">Buy credits</Link>
+          </div>
         )}
         <Suspense><NextStepHost /></Suspense>
         {children}

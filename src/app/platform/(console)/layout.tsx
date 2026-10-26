@@ -9,7 +9,7 @@ import { platformLogout } from "@/app/actions/platform";
 export default async function ConsoleLayout({ children }: LayoutProps<"/platform">) {
   if (isSingleInstall()) notFound(); // a single install has no platform layer
   const admin = await requirePlatform();
-  const nav = [["/platform", "Overview"], ["/platform/tenants", "Agencies"], ["/platform/payments", "Payments"], ["/platform/plans", "Plans"], ["/platform/admins", "Administrators"], ["/platform/security", "My security"]];
+  const nav = [["/platform", "Overview"], ["/platform/tenants", "Agencies"], ["/platform/payments", "Payments"], ["/platform/plans", "Plans"], ["/platform/senders", "Sender IDs"], ["/platform/settings", "Settings"], ["/platform/admins", "Administrators"], ["/platform/security", "My security"]];
   return (
     <div className="min-h-screen">
       <header className="bg-[#14181f] text-white">

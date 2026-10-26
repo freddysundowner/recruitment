@@ -3,6 +3,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { withTenant } from "@/lib/db";
 import { requireCtx } from "@/lib/session";
 import { smsConfigured } from "@/lib/providers/sms";
+import { getPlatformConfig } from "@/lib/platform-config";
 import { whatsappConfigured } from "@/lib/providers/whatsapp";
 import { emailConfigured } from "@/lib/providers/email";
 
@@ -15,7 +16,8 @@ export default async function Messages() {
       FROM messages m LEFT JOIN candidates c ON c.id = m.candidate_id ORDER BY m.created_at DESC LIMIT 100`,
     counts: (await tx`SELECT count(*) FILTER (WHERE status = 'queued') AS queued, count(*) FILTER (WHERE status = 'failed') AS failed FROM messages`)[0],
   }));
-  const providers = [["SMS", smsConfigured()], ["WhatsApp", whatsappConfigured()], ["Email", emailConfigured()]] as const;
+  const cfg = await getPlatformConfig();
+  const providers = [["SMS", smsConfigured(cfg)], ["WhatsApp", whatsappConfigured()], ["Email", emailConfigured(cfg)]] as const;
   return (
     <div className="grid gap-4">
       <PageHeader title="Messages" sub="Every SMS, WhatsApp and email the system sends or tries to send." />

@@ -1,12 +1,11 @@
 import { config } from "dotenv";
 import postgres from "postgres";
-import { sendSms } from "../src/lib/providers/sms";
-import { sendWhatsapp } from "../src/lib/providers/whatsapp";
-import { sendEmail } from "../src/lib/providers/email";
+import { deliverMessage, OutOfCredits } from "../src/lib/send-message";
 import { notifyCandidate } from "../src/lib/notify";
 import { fmtDate, fmtDateTime } from "../src/lib/templates";
 import { deleteFile } from "../src/lib/storage";
-import { configFromSettings, platformConfig, stkQuery } from "../src/lib/mpesa";
+import { configFromSettings, stkQuery } from "../src/lib/mpesa";
+import { buildConfig, type SettingRow } from "../src/lib/platform-config";
 import { applyMpesaResult } from "../src/lib/mpesa-apply";
 
 config({ path: ".env.local" });
@@ -27,19 +26,10 @@ async function claim(): Promise<Job | undefined> {
   return j;
 }
 
-async function sendMessage(messageId: string) {
-  const [m] = await sql`SELECT * FROM messages WHERE id = ${messageId}`;
-  if (!m || m.status === "sent") return;
-  const r =
-    m.channel === "sms" ? await sendSms(m.to_addr, m.body)
-    : m.channel === "whatsapp" ? await sendWhatsapp(m.to_addr, m.body)
-    : await sendEmail(m.to_addr, m.subject ?? "Message", m.body);
-  await sql`UPDATE messages SET status = 'sent', provider_ref = ${r.delivered ? r.ref : `not-delivered:${r.ref}`}, sent_at = now(), error = NULL,
-            body = CASE WHEN template = 'otp' THEN 'Sign-in code sent' ELSE body END WHERE id = ${messageId}`;
-}
+const platform = async () => buildConfig((await sql`SELECT key, value FROM platform_settings`) as unknown as SettingRow[]);
 
 async function run(job: Job) {
-  if (job.kind === "send_message") return sendMessage(job.payload.messageId as string);
+  if (job.kind === "send_message") return deliverMessage(sql, job.payload.messageId as string, await platform());
   if (job.kind === "delete_file") return deleteFile(job.payload.key as string);
   throw new Error(`Unknown job kind: ${job.kind}`);
 }
@@ -53,7 +43,7 @@ async function processDue(): Promise<number> {
       await sql`UPDATE jobs SET status = 'done', last_error = NULL WHERE id = ${j.id}`;
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
-      const final = j.attempts >= j.max_attempts;
+      const final = j.attempts >= j.max_attempts || e instanceof OutOfCredits;
       await sql`
         UPDATE jobs SET status = ${final ? "failed" : "queued"}, last_error = ${msg},
           run_at = now() + (${j.attempts * j.attempts} * interval '1 minute')
@@ -133,7 +123,7 @@ async function reconcileMpesa() {
           await applyMpesaResult(tx as never, r.tenant_id, r.id, { resultCode: 1037, resultDesc: "No answer from the customer (expired)" });
           return;
         }
-        const cfg = r.purpose === "subscription" ? platformConfig() : configFromSettings(r.settings);
+        const cfg = r.purpose !== "candidate_fee" ? (await platform()).mpesa : configFromSettings(r.settings);
         if (!cfg || !r.checkout_request_id) return;
         const q = await stkQuery(cfg, r.checkout_request_id);
         if (q.code !== null) await applyMpesaResult(tx as never, r.tenant_id, r.id, { resultCode: q.code, resultDesc: q.desc });

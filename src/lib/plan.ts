@@ -97,5 +97,3 @@ export async function assertCandidateSlots(tx: Sql, tenantId: string, adding = 1
   }
 }
 
-export const signupEnabled = () => !isSingleInstall() && process.env.SIGNUP_ENABLED !== "false";
-export const trialDays = () => Number(process.env.TRIAL_DAYS ?? 7);

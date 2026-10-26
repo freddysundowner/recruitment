@@ -42,6 +42,10 @@ export async function applyMpesaResult(tx: Sql, tenantId: string, requestId: str
     const meta = req.meta as { plan: string; months: number };
     await tx`SELECT platform_record_payment(${tenantId}, ${req.amount_minor}, 'mpesa', ${r.receipt ?? `STK:${req.checkout_request_id}`}, ${meta.months}, ${meta.plan}, 'mpesa')`;
     await tx`UPDATE mpesa_requests SET status = 'success', result_code = 0, result_desc = ${r.resultDesc}, mpesa_receipt = ${r.receipt ?? null}, completed_at = now() WHERE id = ${requestId}`;
+  } else if (req.purpose === "sms_credits") {
+    const meta = req.meta as { credits: number };
+    await tx`SELECT sms_credits_add(${tenantId}, ${meta.credits}, 'purchase', ${r.receipt ?? `STK:${req.checkout_request_id}`})`;
+    await tx`UPDATE mpesa_requests SET status = 'success', result_code = 0, result_desc = ${r.resultDesc}, mpesa_receipt = ${r.receipt ?? null}, completed_at = now() WHERE id = ${requestId}`;
   } else {
     await tx`UPDATE mpesa_requests SET status = 'success', result_code = 0, result_desc = ${r.resultDesc}, mpesa_receipt = ${r.receipt ?? null}, completed_at = now() WHERE id = ${requestId}`;
   }

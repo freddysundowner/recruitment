@@ -10,10 +10,11 @@ import { randomToken } from "@/lib/crypto";
 import { steps } from "@/lib/next-steps";
 import { fail, field, type FormState } from "@/lib/form";
 import { normalizePhone } from "@/lib/phone";
-import { mockMode, platformConfig, stkQuery } from "@/lib/mpesa";
+import { mockMode, stkQuery } from "@/lib/mpesa";
+import { creditsFor, getPlatformConfig } from "@/lib/platform-config";
 import { applyMpesaResult } from "@/lib/mpesa-apply";
-import { requestSubscriptionStk } from "@/lib/mpesa-start";
-import { createCheckout, stripeConfigured } from "@/lib/stripe";
+import { requestCreditsStk, requestSubscriptionStk } from "@/lib/mpesa-start";
+import { createCheckout } from "@/lib/stripe";
 import { isSingleInstall } from "@/lib/plan";
 
 // Billing is deliberately not blocked by an expired subscription: an agency that has lapsed must still be able to pay.
@@ -63,10 +64,10 @@ export async function checkSubscriptionStk(requestId: string, _: FormState): Pro
     try {
       const ctx = await billingAdmin();
       await withTenant(ctx.tenantId, async (tx) => {
-        const [req] = await tx`SELECT * FROM mpesa_requests WHERE id = ${requestId} AND purpose = 'subscription'`;
+        const [req] = await tx`SELECT * FROM mpesa_requests WHERE id = ${requestId} AND purpose IN ('subscription', 'sms_credits')`;
         if (!req) throw new Error("Request not found.");
         if (req.status !== "pending") { message = `Already ${req.status}`; return; }
-        const cfg = platformConfig();
+        const cfg = (await getPlatformConfig()).mpesa;
         if (!cfg) return;
         const q = await stkQuery(cfg, req.checkout_request_id);
         if (q.code === null) return;
@@ -91,7 +92,7 @@ export async function simulateSubscriptionStk(requestId: string, outcome: "pay" 
       const ctx = await billingAdmin();
       if (!mockMode()) throw new Error("Simulation is only available when MPESA_MODE=mock.");
       await withTenant(ctx.tenantId, async (tx) => {
-        const [req] = await tx`SELECT amount_minor FROM mpesa_requests WHERE id = ${requestId} AND purpose = 'subscription'`;
+        const [req] = await tx`SELECT amount_minor FROM mpesa_requests WHERE id = ${requestId} AND purpose IN ('subscription', 'sms_credits')`;
         if (!req) throw new Error("Request not found.");
         await applyMpesaResult(tx, ctx.tenantId, requestId, outcome === "pay"
           ? { resultCode: 0, resultDesc: "The service request is processed successfully.", amount: Number(req.amount_minor) / 100, receipt: `MOCK${randomToken(5).replace(/[^A-Za-z0-9]/g, "").toUpperCase().slice(0, 7)}` }
@@ -114,13 +115,14 @@ export async function payWithCard(_: FormState, fd: FormData): Promise<FormState
     let url: string;
     try {
       const ctx = await billingAdmin();
-      if (!stripeConfigured()) throw new Error("Card payment is not available right now.");
+      const stripe = (await getPlatformConfig()).stripe;
+      if (!stripe) throw new Error("Card payment is not available right now.");
       const plan = field(fd, "plan") ?? "";
       const months = Number(field(fd, "months") ?? 0);
       const { name, amountMinor } = await priceFor(ctx.tenantId, plan, months);
       const base = (process.env.APP_URL ?? "http://localhost:3100").replace(/\/$/, "");
       const email = await withTenant(ctx.tenantId, async (tx) => (await tx`SELECT email FROM users WHERE id = ${ctx.userId}`)[0]?.email as string | undefined);
-      url = await createCheckout({
+      url = await createCheckout(stripe.secretKey, {
         amountMinor, name: `${name} plan, ${months} month${months > 1 ? "s" : ""}`, tenantId: ctx.tenantId, plan, months, email,
         successUrl: `${base}/billing?paid=1`, cancelUrl: `${base}/billing`,
       });
@@ -128,6 +130,33 @@ export async function payWithCard(_: FormState, fd: FormData): Promise<FormState
       return fail(e);
     }
     redirect(url);
+  } catch (e) {
+    unstable_rethrow(e);
+    return fail(e);
+  }
+}
+
+/** Buys SMS credits by M-Pesa. The amount is whole shillings; the price per credit is set by the platform owner. */
+export async function buyCredits(_: FormState, fd: FormData): Promise<FormState> {
+  try {
+    try {
+      const ctx = await billingAdmin();
+      const kes = Number(field(fd, "pack") === "other" ? field(fd, "other") : field(fd, "pack"));
+      if (!Number.isInteger(kes) || kes < 40 || kes > 50000) throw new Error("Enter a whole amount between KES 40 and KES 50,000.");
+      const phone = normalizePhone(field(fd, "phone") ?? "");
+      if (!phone || !phone.startsWith("+254")) throw new Error("Enter a Safaricom number such as 0712 345 678.");
+      const amountMinor = kes * 100;
+      const credits = creditsFor(amountMinor, (await getPlatformConfig()).credits.priceMinor);
+      if (credits < 1) throw new Error("That amount is too small to buy a credit.");
+      await withTenant(ctx.tenantId, async (tx) => {
+        await requestCreditsStk(tx, { tenantId: ctx.tenantId, credits, phone, amountMinor, createdBy: ctx.userId });
+        await audit(tx, ctx, "billing.credits_request", "tenant", ctx.tenantId, { credits, amount_minor: amountMinor });
+      });
+    } catch (e) {
+      return fail(e);
+    }
+    revalidatePath("/billing");
+    return { ok: "Check your phone and enter your M-Pesa PIN. Your credits are added as soon as the payment is confirmed.", next: steps.creditsPrompt() };
   } catch (e) {
     unstable_rethrow(e);
     return fail(e);

@@ -25,7 +25,7 @@ const errorsOn = (p, bag) => { p.on("pageerror", (e) => bag.push(e.message)); };
   await page.locator("#password").fill(process.env.PLATFORM_PASSWORD ?? "e2e-platform-pass-1");
   await page.getByRole("button", { name: "Continue" }).click();
   await page.waitForURL(/\/platform(?!\/login)/);
-  for (const [path, label] of [["/platform", "Overview"], ["/platform/tenants", "Agencies"], ["/platform/payments", "Payments"], ["/platform/plans", "Plans"], ["/platform/admins", "Administrators"], ["/platform/security", "My security"]]) {
+  for (const [path, label] of [["/platform", "Overview"], ["/platform/tenants", "Agencies"], ["/platform/payments", "Payments"], ["/platform/plans", "Plans"], ["/platform/senders", "Sender IDs"], ["/platform/settings", "Settings"], ["/platform/admins", "Administrators"], ["/platform/security", "My security"]]) {
     await page.goto(`${BASE}${path}`);
     await page.locator("main").first().waitFor();
     const text = await page.locator("body").innerText();

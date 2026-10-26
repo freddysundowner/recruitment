@@ -5,7 +5,8 @@ import {
 } from "lucide-react";
 import { sql } from "@/lib/db";
 import { formatMoney } from "@/lib/money";
-import { isSingleInstall, signupEnabled, trialDays } from "@/lib/plan";
+import { isSingleInstall } from "@/lib/plan";
+import { getPlatformConfig } from "@/lib/platform-config";
 import { getCtx } from "@/lib/session";
 
 const FEATURES = [
@@ -23,7 +24,9 @@ export default async function Welcome() {
   if (isSingleInstall()) redirect("/login");
   if (await getCtx()) redirect("/");
   const plans = await sql`SELECT code, name, price_kes_minor, max_users, max_candidates, features FROM plans WHERE active ORDER BY sort`;
-  const can = signupEnabled();
+  const cfg = await getPlatformConfig();
+  const can = cfg.signup.enabled;
+  const trialDays = () => cfg.signup.trialDays;
   const FEAT: [string, string][] = [["candidate_portal", "Candidate portal"], ["employer_portal", "Employer portal"], ["mpesa", "M-Pesa collection"], ["whatsapp", "WhatsApp messages"]];
 
   return (

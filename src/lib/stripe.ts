@@ -1,9 +1,7 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 
 // Card payments through Stripe Checkout, using Stripe's HTTP API directly (no SDK to install or keep updated).
-export const stripeConfigured = () => Boolean(process.env.STRIPE_SECRET_KEY && process.env.STRIPE_WEBHOOK_SECRET);
-
-export async function createCheckout(a: {
+export async function createCheckout(secretKey: string, a: {
   amountMinor: number; name: string; tenantId: string; plan: string; months: number; email?: string; successUrl: string; cancelUrl: string;
 }): Promise<string> {
   const body = new URLSearchParams({
@@ -21,7 +19,7 @@ export async function createCheckout(a: {
   if (a.email) body.set("customer_email", a.email);
   const res = await fetch("https://api.stripe.com/v1/checkout/sessions", {
     method: "POST",
-    headers: { Authorization: `Bearer ${process.env.STRIPE_SECRET_KEY}`, "Content-Type": "application/x-www-form-urlencoded" },
+    headers: { Authorization: `Bearer ${secretKey}`, "Content-Type": "application/x-www-form-urlencoded" },
     body,
   });
   const j = (await res.json().catch(() => ({}))) as { url?: string; error?: { message: string } };

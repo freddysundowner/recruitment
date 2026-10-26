@@ -276,3 +276,77 @@ export async function setPlatformAdminStatus(id: string, status: "active" | "dis
     return fail(e);
   }
 }
+
+// ---------------------------------------------------------------- platform settings
+type FieldKind = "text" | "secret" | "bool" | "int" | "kes";
+const SECTIONS: Record<string, { title: string; fields: Record<string, FieldKind> }> = {
+  signup: { title: "Sign-up", fields: { enabled: "bool", trial_days: "int" } },
+  credits: { title: "SMS credits", fields: { price_minor: "kes", free_on_signup: "int" } },
+  sms: { title: "SMS (BlessedTexts)", fields: { api_key: "secret", sender_id: "text", endpoint: "text" } },
+  email: { title: "Email (Brevo)", fields: { api_key: "secret", from_email: "text", from_name: "text" } },
+  mpesa: { title: "M-Pesa (payments to you)", fields: { env: "text", type: "text", shortcode: "text", consumer_key: "secret", consumer_secret: "secret", passkey: "secret" } },
+  stripe: { title: "Card payments (Stripe)", fields: { secret_key: "secret", webhook_secret: "secret" } },
+};
+
+/** Saves one block of platform settings. A secret left blank keeps what was saved; everything else is replaced. */
+export async function savePlatformSection(section: string, _: FormState, fd: FormData): Promise<FormState> {
+  try {
+    const a = await requirePlatformStrict();
+    const spec = SECTIONS[section];
+    if (!spec) return { error: "Unknown settings section." };
+    const current = ((await sql`SELECT key, value FROM platform_settings_all()`) as unknown as { key: string; value: Record<string, unknown> }[]).find((r) => r.key === section)?.value ?? {};
+    const next: Record<string, unknown> = {};
+    for (const [k, kind] of Object.entries(spec.fields)) {
+      const v = field(fd, k);
+      if (kind === "secret") {
+        if (v) next[`${k}_enc`] = encrypt(v);
+        else if (current[`${k}_enc`]) next[`${k}_enc`] = current[`${k}_enc`];
+      } else if (kind === "bool") next[k] = fd.get(k) === "on";
+      else if (kind === "int") {
+        if (v === null) continue;
+        const n = Number(v);
+        if (!Number.isInteger(n) || n < 0 || n > 100000) return { error: `${k.replace(/_/g, " ")} must be a whole number.` };
+        next[k] = n;
+      } else if (kind === "kes") {
+        if (v === null) continue;
+        const m = toMinor(v);
+        if (m === null || m <= 0) return { error: "Enter the price in shillings, for example 0.40." };
+        next[k] = m;
+      } else if (v !== null) next[k] = v;
+    }
+    if (section === "sms" && typeof next.endpoint === "string" && !/^https:\/\//.test(next.endpoint)) return { error: "The sending address must start with https://." };
+    await sql`SELECT platform_setting_save(${section}, ${sql.json(next as never)}, ${a.name})`;
+    revalidatePath("/platform/settings");
+    revalidatePath("/", "layout");
+    return { ok: "Saved", next: steps.platformSaved(spec.title) };
+  } catch (e) {
+    unstable_rethrow(e);
+    return fail(e);
+  }
+}
+
+export async function reviewSender(id: string, status: "approved" | "rejected", _: FormState, fd: FormData): Promise<FormState> {
+  try {
+    const a = await requirePlatformStrict();
+    await sql`SELECT platform_sender_review(${id}, ${status}, ${field(fd, "note") ?? ""}, ${a.name})`;
+    revalidatePath("/platform/senders");
+    return { ok: status === "approved" ? "Approved" : "Rejected", next: steps.senderReviewed(status) };
+  } catch (e) {
+    unstable_rethrow(e);
+    return fail(e);
+  }
+}
+
+export async function grantCredits(tenantId: string, _: FormState, fd: FormData): Promise<FormState> {
+  try {
+    const a = await requirePlatformStrict();
+    const n = Number(field(fd, "credits") ?? 0);
+    if (!Number.isInteger(n) || n < 1 || n > 100000) return { error: "Enter a whole number of credits, from 1 to 100,000." };
+    await sql`SELECT platform_credits_grant(${tenantId}, ${n}, ${a.name})`;
+    revalidatePath(`/platform/tenants/${tenantId}`);
+    return { ok: `Added ${n} credits`, next: steps.tenantUpdated(tenantId, `${n} credits added`) };
+  } catch (e) {
+    unstable_rethrow(e);
+    return fail(e);
+  }
+}

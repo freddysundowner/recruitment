@@ -398,6 +398,16 @@ export const steps = {
     body: "Enter your M-Pesa PIN. Your plan updates when it is confirmed.",
     actions: [{ label: "Check the payment status", href: "/billing", primary: true }, { label: "Back to the dashboard", href: "/" }],
   }),
+  senderRequested: (approved: boolean): Step => ({
+    title: approved ? "Sender saved" : "Sent for approval",
+    body: approved ? "It is used for your messages now." : "We will use the platform's sender until it is approved.",
+    actions: [{ label: "Back to messages settings", href: "/settings/messages", primary: true }, { label: "Open the dashboard", href: "/" }],
+  }),
+  creditsPrompt: (): Step => ({
+    title: "Check your phone",
+    body: "Enter your M-Pesa PIN. Your credits are added when it is confirmed.",
+    actions: [{ label: "Check the payment status", href: "/billing#credits", primary: true }, { label: "Back to the dashboard", href: "/" }],
+  }),
   subscriptionChecked: (): Step => ({
     title: "Status checked",
     body: "If the payment went through, your plan is already updated.",
@@ -409,6 +419,16 @@ export const steps = {
     title: what,
     body: "The agency sees it straight away.",
     actions: [{ label: "Back to the agency", href: `/platform/tenants/${tenantId}`, primary: true }, { label: "All agencies", href: "/platform/tenants" }, { label: "See payments", href: "/platform/payments" }],
+  }),
+  platformSaved: (what: string): Step => ({
+    title: `${what} saved`,
+    body: "It applies straight away.",
+    actions: [{ label: "Back to settings", href: "/platform/settings", primary: true }, { label: "Platform overview", href: "/platform" }],
+  }),
+  senderReviewed: (status: "approved" | "rejected"): Step => ({
+    title: status === "approved" ? "Sender approved" : "Sender rejected",
+    body: status === "approved" ? "The agency's messages use it from now on." : "The agency keeps using the platform's sender.",
+    actions: [{ label: "Back to sender requests", href: "/platform/senders", primary: true }, { label: "Platform overview", href: "/platform" }],
   }),
   planSaved: (): Step => ({
     title: "Plan saved",

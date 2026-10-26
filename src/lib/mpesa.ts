@@ -32,13 +32,6 @@ export function configFromSettings(settings: Record<string, unknown> | null | un
   };
 }
 
-/** The platform's own account, used to collect subscription payments. */
-export function platformConfig(): MpesaConfig | null {
-  const { MPESA_SHORTCODE: sc, MPESA_CONSUMER_KEY: k, MPESA_CONSUMER_SECRET: s, MPESA_PASSKEY: p } = process.env;
-  if (!sc || !k || !s || !p) return null;
-  return { env: process.env.MPESA_ENV === "production" ? "production" : "sandbox", type: process.env.MPESA_TYPE === "till" ? "till" : "paybill", shortcode: sc, consumerKey: k, consumerSecret: s, passkey: p };
-}
-
 const timestamp = () => new Date().toISOString().replace(/[-:T.Z]/g, "").slice(0, 14);
 
 async function token(c: MpesaConfig): Promise<string> {

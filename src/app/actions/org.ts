@@ -10,7 +10,7 @@ import { audit } from "@/lib/audit";
 import { steps } from "@/lib/next-steps";
 import { fail, field, type FormState } from "@/lib/form";
 import { toMinor } from "@/lib/money";
-import { assertFeature, assertUserSlot, getAccess } from "@/lib/plan";
+import { assertFeature, assertUserSlot, getAccess, isSingleInstall } from "@/lib/plan";
 
 // ---------------------------------------------------------------- employers
 const EmployerSchema = z.object({
@@ -329,6 +329,42 @@ export async function approveJobOrder(id: string, _: FormState, fd: FormData): P
     revalidatePath(`/job-orders/${id}`);
     revalidatePath("/job-orders");
     return { ok: "Approved and open", next: steps.jobOrderApproved(id) };
+  } catch (e) {
+    unstable_rethrow(e);
+    return fail(e);
+  }
+}
+
+/** An agency asks to send its texts or emails under its own name. The platform owner approves it (or it is approved at once on a single install). */
+export async function requestSender(kind: "sms" | "email", _: FormState, fd: FormData): Promise<FormState> {
+  try {
+    const ctx = await requireCan("users:manage");
+    const value = (field(fd, "value") ?? "").trim();
+    const display = (field(fd, "display_name") ?? "").trim();
+    if (kind === "sms" && !/^[A-Za-z0-9]{3,11}$/.test(value)) return { error: "An SMS sender ID is 3 to 11 letters or numbers, with no spaces." };
+    if (kind === "email" && !z.email().safeParse(value).success) return { error: "Enter the email address you send from." };
+    const auto = isSingleInstall();
+    await withTenant(ctx.tenantId, async (tx) => {
+      await tx`SELECT tenant_sender_set(${ctx.tenantId}, ${kind}, ${value}, ${display}, ${auto})`;
+      await audit(tx, ctx, "settings.sender", "tenant", ctx.tenantId, { kind, value });
+    });
+    revalidatePath("/settings", "layout");
+    return { ok: auto ? "Saved. It is in use now." : "Sent for approval. Your messages use the platform's sender until it is approved.", next: steps.senderRequested(auto) };
+  } catch (e) {
+    unstable_rethrow(e);
+    return fail(e);
+  }
+}
+
+export async function removeSender(kind: "sms" | "email", _: FormState): Promise<FormState> {
+  try {
+    const ctx = await requireCan("users:manage");
+    await withTenant(ctx.tenantId, async (tx) => {
+      await tx`DELETE FROM tenant_senders WHERE kind = ${kind}`;
+      await audit(tx, ctx, "settings.sender_removed", "tenant", ctx.tenantId, { kind });
+    });
+    revalidatePath("/settings", "layout");
+    return { ok: "Removed", next: steps.settingsSaved("messages") };
   } catch (e) {
     unstable_rethrow(e);
     return fail(e);

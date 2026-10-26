@@ -67,6 +67,23 @@ await step("dashboard shows setup guidance, no sample data", async () => {
   await noError();
 });
 
+await step("the new agency starts with 20 SMS credits and can buy more", async () => {
+  await go(`${BASE}/billing`);
+  await page.locator("#credits").getByText("credits left").waitFor();
+  const n = (await page.locator("#credits .text-\\[28px\\]").first().innerText()).replace(/\D/g, "");
+  if (n !== "20") throw new Error(`expected 20 credits, saw ${n}`);
+  await page.locator("#credits").getByRole("button", { name: "Buy credits with M-Pesa" }).waitFor();
+});
+
+await step("ask to send texts under the agency's own sender ID", async () => {
+  await go(`${BASE}/settings/messages`);
+  await page.waitForLoadState("networkidle");
+  await page.locator("#value_sms").fill("E2ESMS");
+  await page.getByRole("button", { name: "Connect" }).first().click();
+  await expectNext("Sent for approval"); await closeNext();
+  await page.getByText("waiting for approval").first().waitFor();
+});
+
 let employerUrl;
 await step("add an employer and see what next", async () => {
   await go(`${BASE}/employers/new`);

@@ -79,7 +79,7 @@ Take a backup first. Migrations only add to the database and never delete your d
 
 ## Optional pieces
 
-- **SMS, WhatsApp, email:** fill in the `AT_*`, `WHATSAPP_*` and `SMTP_URL` settings. Until you do, messages are recorded in the system but not delivered, and the Messages sections say so.
+- **SMS, email and WhatsApp:** SMS goes through BlessedTexts and email through Brevo. On a single install, fill in `BLESSEDTEXTS_API_KEY`, `BREVO_API_KEY`, `EMAIL_FROM` and the `WHATSAPP_*` settings. On the shared service, sign in to `/platform` and fill them in under **Settings** instead. Until you do, messages are recorded but not delivered, and the Messages sections say so. On the shared service each agency starts with 20 free SMS credits and buys more by M-Pesa; the price per credit is also under Settings.
 - **Your own document storage (MinIO):** set `STORAGE_DRIVER=s3`, `S3_ENDPOINT=http://minio:9000`, `S3_FORCE_PATH_STYLE=true`, `S3_BUCKET`, and the access key and secret, then add `--profile minio` to the `up` command.
 - **Virus scanning of uploads:** set `CLAMAV_HOST=clamav` and add `--profile clamav`. Add `CLAMAV_REQUIRED=true` to pause uploads whenever the scanner is down.
 - **Agency addresses such as `acme.yourapp.co.ke` (shared service):** set `APP_DOMAIN=yourapp.co.ke` and point a wildcard DNS record `*.yourapp.co.ke` and a wildcard certificate at the server.

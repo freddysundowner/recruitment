@@ -4,7 +4,7 @@ import { sql } from "@/lib/db";
 import { requirePlatform } from "@/lib/platform";
 import { formatMoney } from "@/lib/money";
 import { ActionForm } from "@/components/ActionForm";
-import { extendTrial, recordManualPayment, setTenantPlan, setTenantStatus, startSupportAccess } from "@/app/actions/platform";
+import { extendTrial, grantCredits, recordManualPayment, setTenantPlan, setTenantStatus, startSupportAccess } from "@/app/actions/platform";
 
 const fmt = (d: unknown) => (d ? new Date(d as string).toLocaleDateString("en-KE", { day: "numeric", month: "short", year: "numeric" }) : "—");
 
@@ -16,6 +16,7 @@ export default async function TenantPage({ params }: PageProps<"/platform/tenant
   if (!t) notFound();
   const plans = await sql`SELECT code, name, price_kes_minor FROM plans ORDER BY sort`;
   const pays = await sql`SELECT * FROM platform_tenant_payments(${id})`;
+  const credits = Number((await sql`SELECT platform_credits_balance(${id}) AS n`)[0].n);
   const expired = Boolean(t.expired);
   const can = admin.totpEnabled;
 
@@ -69,6 +70,14 @@ export default async function TenantPage({ params }: PageProps<"/platform/tenant
               </ActionForm>
             </div>
           )}
+          <div className="card grid gap-3">
+            <div className="flex items-baseline justify-between"><div className="h2">SMS credits</div><b>{credits.toLocaleString("en-KE")} left</b></div>
+            {can ? (
+              <ActionForm confirm="Add these credits to the agency's account?" action={grantCredits.bind(null, t.id)} submit="Add credits" buttonClass="btn" className="flex gap-2 items-end">
+                <div className="w-32"><input name="credits" type="number" min={1} max={100000} defaultValue={100} className="input" aria-label="Credits to add" /></div><span className="muted self-center">credits, free of charge</span>
+              </ActionForm>
+            ) : <p className="muted text-xs">Set up two-step sign-in to make changes.</p>}
+          </div>
           {can && (
             <div className="card grid gap-3">
               <div className="h2">Support access</div>

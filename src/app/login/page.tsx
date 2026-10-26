@@ -2,7 +2,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Globe2 } from "lucide-react";
 import { getCtx } from "@/lib/session";
-import { isSingleInstall, signupEnabled } from "@/lib/plan";
+import { isSingleInstall } from "@/lib/plan";
+import { getPlatformConfig } from "@/lib/platform-config";
 import { sql } from "@/lib/db";
 import { LoginForm } from "./form";
 
@@ -23,7 +24,7 @@ export default async function LoginPage() {
         <div className="card" style={{ padding: 24 }}>
           <LoginForm />
         </div>
-        {signupEnabled() && <p className="muted text-sm text-center mt-4">New agency? <Link className="link" href="/signup">Start a free trial</Link></p>}
+        {(await getPlatformConfig()).signup.enabled && <p className="muted text-sm text-center mt-4">New agency? <Link className="link" href="/signup">Start a free trial</Link></p>}
         <p className="muted text-xs text-center mt-2">Looking for work abroad? Ask your agency for its candidate page address.</p>
       </div>
     </main>

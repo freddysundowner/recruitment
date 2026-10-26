@@ -1,10 +1,11 @@
 import { sql } from "@/lib/db";
 import { verifyStripeSignature } from "@/lib/stripe";
+import { getPlatformConfig } from "@/lib/platform-config";
 
 // Stripe tells us a card payment succeeded. The signature proves the message really came from Stripe, and the
 // payment function ignores a payment it has already recorded, so a repeated message cannot extend a plan twice.
 export async function POST(req: Request) {
-  const secret = process.env.STRIPE_WEBHOOK_SECRET;
+  const secret = (await getPlatformConfig()).stripe?.webhookSecret;
   if (!secret) return new Response("Not configured", { status: 404 });
   const raw = await req.text();
   if (!verifyStripeSignature(raw, req.headers.get("stripe-signature"), secret)) return new Response("Bad signature", { status: 400 });

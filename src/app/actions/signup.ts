@@ -8,7 +8,7 @@ import { createSession } from "@/lib/session";
 import { fail, field, type FormState } from "@/lib/form";
 import { DEFAULT_STAGES } from "@/lib/stages";
 import { queueMessage } from "@/lib/notify";
-import { signupEnabled, trialDays } from "@/lib/plan";
+import { getPlatformConfig } from "@/lib/platform-config";
 
 // Everyone starts the free trial on the full plan, so they can try everything.
 const TRIAL_PLAN = "pro";
@@ -31,7 +31,8 @@ const MESSAGES: Record<string, string> = {
 
 export async function signup(_: FormState, fd: FormData): Promise<FormState> {
   try {
-    if (!signupEnabled()) return { error: "Sign-up is closed. Contact us to open an account." };
+    const cfg = await getPlatformConfig();
+    if (!cfg.signup.enabled) return { error: "Sign-up is closed. Contact us to open an account." };
     const p = Schema.safeParse({
       agency: field(fd, "agency"), name: field(fd, "name"), email: field(fd, "email"), password: field(fd, "password"),
     });
@@ -50,7 +51,7 @@ export async function signup(_: FormState, fd: FormData): Promise<FormState> {
         try {
           const [row] = await sql`
             SELECT platform_create_tenant(${p.data.agency}, ${slug}, ${p.data.name}, ${p.data.email}, ${hash},
-              ${TRIAL_PLAN}, ${trialDays()}, ${sql.json(DEFAULT_STAGES as never)}) AS id`;
+              ${TRIAL_PLAN}, ${cfg.signup.trialDays}, ${sql.json(DEFAULT_STAGES as never)}) AS id`;
           id = row.id;
           slugUsed = slug;
         } catch (e) {
@@ -62,11 +63,13 @@ export async function signup(_: FormState, fd: FormData): Promise<FormState> {
       tenantId = id;
       const [u] = await sql`SELECT id FROM auth_lookup_user(${p.data.email})`;
       userId = u.id;
+      // The starting SMS credits, drawn from the platform account until the agency buys more.
+      if (cfg.credits.freeOnSignup > 0) await sql`SELECT sms_credits_add(${tenantId}, ${cfg.credits.freeOnSignup}, 'signup_grant', 'initial')`;
       // A new workspace starts with the two strictest rules relaxed so it is easy to try; Settings turns them on.
       await withTenant(tenantId, (tx) => tx`UPDATE tenants SET settings = settings || ${tx.json({ rules: { contract_check: false, require_vetting: false } })}`);
       await withTenant(tenantId, (tx) => queueMessage(tx, tenantId, {
         channel: "email", to: p.data.email, subject: `Welcome to ${p.data.agency}'s new workspace`, template: "tenant_welcome",
-        body: `Hello ${p.data.name},\n\nYour agency workspace is ready, with a ${trialDays()}-day free trial.\n\nStaff sign in: ${process.env.APP_URL ?? ""}/login\nCandidates register and sign in: ${process.env.APP_URL ?? ""}/c/${slugUsed}\n\nA good first hour: add your team, import your candidates from a spreadsheet, add an employer and a job order.`,
+        body: `Hello ${p.data.name},\n\nYour agency workspace is ready, with a ${cfg.signup.trialDays}-day free trial.\n\nStaff sign in: ${process.env.APP_URL ?? ""}/login\nCandidates register and sign in: ${process.env.APP_URL ?? ""}/c/${slugUsed}\n\nA good first hour: add your team, import your candidates from a spreadsheet, add an employer and a job order.`,
       }));
     } catch (e) {
       const code = e instanceof Error ? e.message : "";
