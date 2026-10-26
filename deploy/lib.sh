@@ -228,8 +228,13 @@ install_database() {
     [ -n "$PG_PORT" ] || die "Could not talk to PostgreSQL as its administrator (the 'postgres' account). If it needs a password or runs elsewhere, give PG_ADMIN_URL."
   fi
   local v; v="$(pg_admin -tAc 'show server_version_num')"
-  [ "$v" -ge 140000 ] || die "PostgreSQL 14 or newer is needed (this is $(pg_admin -tAc 'show server_version'))."
+  [ "$v" -ge 120000 ] || die "PostgreSQL 12 or newer is needed (this is $(pg_admin -tAc 'show server_version')). The system is tested on 12 and newer."
   ok "PostgreSQL $(pg_admin -tAc 'show server_version') on port $PG_PORT"
+}
+pg_admin_in_db() { # pg_admin_in_db DATABASE args...  (as the administrator, inside one database)
+  local db="$1"; shift
+  if [ -n "${PG_ADMIN_URL:-}" ]; then psql -X -v ON_ERROR_STOP=1 "$(printf '%s' "$PG_ADMIN_URL" | sed -E "s#^([a-z]+://[^/?]+)(/[^?]*)?#\1/$db#")" "$@"
+  else runuser -u postgres -- psql -X -v ON_ERROR_STOP=1 -p "${PG_PORT:-5432}" -d "$db" "$@"; fi
 }
 start_postgres() {
   pg_admin -tAc 'select 1' >/dev/null 2>&1 && return 0
@@ -278,6 +283,8 @@ SELECT format('CREATE DATABASE %I OWNER recruit_admin', :'db') WHERE NOT EXISTS 
 SELECT format('REVOKE ALL ON DATABASE %I FROM PUBLIC', :'db') \gexec
 SELECT format('GRANT CONNECT ON DATABASE %I TO recruit_app', :'db') \gexec
 SQL
+  # The system uses the pgcrypto extension. On PostgreSQL 12 only an administrator may create it, so it is done here, once.
+  pg_admin_in_db "$DB_NAME" -c "CREATE EXTENSION IF NOT EXISTS pgcrypto" >>"$LOG_FILE" 2>&1 || die "Could not enable the pgcrypto extension. Is the 'postgresql-contrib' package installed? See $LOG_FILE."
   [ -z "$admin_exists" ] && ok "Created the database owner (recruit_admin)" || ok "The database owner already existed"
   [ -z "$app_exists" ] && ok "Created the runtime user (recruit_app)" || ok "The runtime user already existed"
   [ -z "$db_exists" ] && ok "Created the database '$DB_NAME'" || ok "The database '$DB_NAME' already existed, so it was kept as it is"

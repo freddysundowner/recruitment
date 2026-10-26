@@ -1,5 +1,7 @@
 # Installing on a server with the scripts (recommended)
 
+Works on Ubuntu and Debian with PostgreSQL 12 or newer (an older one on the server is used as it is; the system is tested on 12 and on 16).
+
 For an ordinary Ubuntu or Debian server (a VPS), two scripts do everything. Copy the whole system folder to the server, then run one of them as root:
 
 ```bash
