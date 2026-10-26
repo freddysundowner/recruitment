@@ -65,7 +65,7 @@ export default async function Dashboard() {
         (SELECT count(*) FROM job_orders) AS jobs,
         (SELECT count(*) FROM candidates) AS candidates,
         (SELECT count(*) FROM placements WHERE job_order_id IS NOT NULL) AS matched,
-        (SELECT count(*) FROM placements p JOIN pipeline_stages s ON s.id = p.stage_id WHERE s.position >= 5) AS advanced,
+        (SELECT count(*) FROM placements p JOIN pipeline_stages s ON s.id = p.stage_id WHERE s.position >= 3) AS advanced,
         (SELECT count(*) FROM candidates WHERE source = 'portal') AS portal_signups,
         (SELECT (settings ? 'mpesa')::int FROM tenants WHERE id = ${ctx.tenantId}) AS mpesa,
         (SELECT count(*) FROM candidates WHERE source = 'sample') AS sample`;
@@ -101,7 +101,7 @@ export default async function Dashboard() {
     { done: n(setup.jobs) > 0, label: "Create a job order", sub: "Roles, how many workers, who pays the costs", href: "/job-orders/new", show: true },
     { done: n(setup.candidates) > 0, label: "Add or import candidates", sub: "One at a time, or a whole spreadsheet at once", href: "/candidates/import", show: true },
     { done: n(setup.matched) > 0, label: "Match a candidate to a job", sub: "Open a candidate and choose a job order", href: "/candidates", show: true },
-    { done: n(setup.advanced) > 0, label: "Take a candidate through the pipeline", sub: "Verify documents, record the contract, then visa and travel", href: "/pipeline", show: true },
+    { done: n(setup.advanced) > 0, label: "Take a candidate through the pipeline", sub: "Match them to a job, record the contract, then get them ready to travel", href: "/pipeline", show: true },
     { done: n(setup.mpesa) > 0, label: "Set up M-Pesa collections", sub: "So candidates can pay fees from their phone", href: "/settings/payments", show: admin && access.features.mpesa },
     { done: n(setup.portal_signups) > 0, label: "Share your candidate page", sub: "Candidates register and apply from their phones", href: "/settings/general", show: admin && access.features.candidate_portal },
   ].filter((i) => i.show);

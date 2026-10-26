@@ -19,7 +19,7 @@ describe("next-step suggestions", () => {
   const all: Step[] = [
     steps.candidateCreated(id, "A B"), steps.importDone(3), steps.documentUploaded(id), steps.documentReviewed(id, "verified"), steps.employerCreated(id, "Acme"),
     steps.employerCheck(id, "ok"), steps.employerVetted(id), steps.employerLogin(id), steps.jobOrderCreated(id, "Nurse"), steps.jobOrderApproved(id), steps.jobAssigned(id),
-    ...[1, 2, 3, 4, 5, 6, 7, 8, 9].map((p) => steps.stageMoved(id, p, "Stage", id)), steps.placementClosed(id), steps.applicationDecided(id, "shortlisted"),
+    ...[1, 2, 3, 4, 5].map((p) => steps.stageMoved(id, p, "Stage", id)), steps.placementClosed(id), steps.applicationDecided(id, "shortlisted"),
     steps.applicationDecided(null, "declined"), steps.contractRecorded(id, "candidate", false), steps.contractRecorded(id, "employer", true), steps.travelSaved(id),
     steps.appointmentAdded(id), steps.checkinDone(), steps.complaintRecorded(), steps.costAdded(id, true), steps.costAdded(id, false), steps.feeAdded(id),
     steps.invoiceRaised(id), steps.paymentRecorded(id, "RCT-00001"), steps.mpesaRequested(id), steps.userAdded(), steps.mpesaSettingsSaved(), steps.checklistSaved(),
@@ -43,10 +43,10 @@ describe("next-step suggestions", () => {
   });
 
   it("tells the user the right thing for the stage they have just reached", () => {
-    expect(steps.stageMoved(id, 5, "Contract", id).body).toMatch(/contract/i);
-    expect(steps.stageMoved(id, 7, "Visa and travel", id).actions[0].href).toContain("#travel");
-    expect(steps.stageMoved(id, 8, "Deployed", id).actions[0].href).toContain("#invoices");
-    expect(steps.stageMoved(id, 6, "Documents", id).actions[0].href).toBe("/verify");
+    expect(steps.stageMoved(id, 3, "Selected", id).body).toMatch(/contract/i);
+    expect(steps.stageMoved(id, 4, "Getting ready", id).actions[0].href).toContain("#travel");
+    expect(steps.stageMoved(id, 4, "Getting ready", id).actions.some((a) => a.href === "/verify")).toBe(true);
+    expect(steps.stageMoved(id, 5, "Abroad", id).actions[0].href).toContain("#invoices");
   });
 
   it("only suggests raising an invoice when the employer pays the costs", () => {

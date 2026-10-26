@@ -53,15 +53,11 @@ export async function employerInterview(placementId: string, _: FormState, fd: F
     try {
       const ctx = await requireEmployer();
       const p = await ownPlacement(ctx, placementId);
-      if (p.position < 3 || p.position > 4) throw new Error("You can only ask for an interview while the candidate is shortlisted.");
+      if (p.position !== 2) throw new Error("You can only ask for an interview while the candidate is put forward to you.");
       const when = field(fd, "scheduled_at");
       const at = when ? new Date(when) : null;
       if (!at || Number.isNaN(at.getTime()) || at.getTime() < Date.now()) throw new Error("Choose a date and time in the future.");
       await withTenant(ctx.tenantId, async (tx) => {
-        if (p.position === 3) {
-          const r = await moveStage(tx, actor(ctx), placementId, await stageAt(tx, 4), "Employer asked for an interview", false);
-          if (!r.ok) throw new Error(r.error);
-        }
         const [a] = await tx`
           INSERT INTO appointments (tenant_id, placement_id, kind, scheduled_at, location, notes)
           VALUES (${ctx.tenantId}, ${placementId}, 'interview', ${at}, ${field(fd, "location") ?? "Online"}, ${field(fd, "notes") ?? ""}) RETURNING id`;
@@ -90,13 +86,9 @@ export async function employerSelect(placementId: string, _: FormState, fd: Form
       const ctx = await requireEmployer();
       const p = await ownPlacement(ctx, placementId);
       jobId = p.job_order_id;
-      if (p.position < 3 || p.position > 4) throw new Error("This candidate is not waiting for your decision.");
+      if (p.position !== 2) throw new Error("This candidate is not waiting for your decision.");
       await withTenant(ctx.tenantId, async (tx) => {
-        if (p.position === 3) {
-          const r = await moveStage(tx, actor(ctx), placementId, await stageAt(tx, 4), "Employer selected the candidate", false);
-          if (!r.ok) throw new Error(r.error);
-        }
-        const r = await moveStage(tx, actor(ctx), placementId, await stageAt(tx, 5), "Selected by the employer", false);
+        const r = await moveStage(tx, actor(ctx), placementId, await stageAt(tx, 3), "Selected by the employer", false);
         if (!r.ok) throw new Error(r.error);
         await tx`INSERT INTO employer_decisions (tenant_id, placement_id, employer_id, decision, note, decided_by)
                  VALUES (${ctx.tenantId}, ${placementId}, ${ctx.employerId}, 'select', ${field(fd, "notes") ?? ""}, ${ctx.userId})`;
@@ -118,7 +110,7 @@ export async function employerReject(placementId: string, _: FormState, fd: Form
     try {
       const ctx = await requireEmployer();
       const p = await ownPlacement(ctx, placementId);
-      if (p.position < 3 || p.position > 4) throw new Error("This candidate is not waiting for your decision.");
+      if (p.position !== 2) throw new Error("This candidate is not waiting for your decision.");
       const reason = field(fd, "notes");
       if (!reason || reason.length < 3) throw new Error("Give a short reason, so the agency can find a better match.");
       await withTenant(ctx.tenantId, async (tx) => {
@@ -145,7 +137,7 @@ export async function employerContract(placementId: string, _: FormState, fd: Fo
     try {
       const ctx = await requireEmployer();
       const p = await ownPlacement(ctx, placementId);
-      if (p.position < 5) throw new Error("You can record the contract once you have selected the candidate.");
+      if (p.position < 3) throw new Error("You can record the contract once you have selected the candidate.");
       const salary = toMinor(field(fd, "salary") ?? "");
       if (salary === null || salary < 0) throw new Error("Enter the monthly salary, for example 1300.00.");
       const hours = field(fd, "hours") ? Number(field(fd, "hours")) : null;

@@ -19,7 +19,7 @@ export default async function EmployerJob({ params }: PageProps<"/employer/jobs/
       SELECT p.id, p.outcome, p.close_reason, s.position, s.name AS stage,
              c.first_name, c.last_name, c.gender, c.dob, c.county, c.skills, c.experience, c.id_number_enc
       FROM placements p JOIN pipeline_stages s ON s.id = p.stage_id JOIN candidates c ON c.id = p.candidate_id
-      WHERE p.job_order_id = ${id} AND s.position >= 3 ORDER BY (p.outcome = 'closed'), s.position, c.first_name`;
+      WHERE p.job_order_id = ${id} AND s.position >= 2 ORDER BY (p.outcome = 'closed'), s.position, c.first_name`;
     const appts = await tx`SELECT placement_id, scheduled_at, location, result FROM appointments WHERE kind = 'interview' ORDER BY scheduled_at`;
     const contracts = await tx`SELECT DISTINCT ON (placement_id, party) placement_id, party, salary_minor, currency, hours_per_week, months FROM contracts ORDER BY placement_id, party, created_at DESC`;
     const travel = await tx`SELECT placement_id, departure_on, arrival_confirmed_on, employer_start_on FROM placement_travel`;
@@ -40,7 +40,7 @@ export default async function EmployerJob({ params }: PageProps<"/employer/jobs/
         const mine = d.appts.filter((a) => a.placement_id === p.id);
         const employerCopy = d.contracts.find((c) => c.placement_id === p.id && c.party === "employer");
         const tr = d.travel.find((t) => t.placement_id === p.id);
-        const deciding = p.outcome !== "closed" && p.position >= 3 && p.position <= 4;
+        const deciding = p.outcome !== "closed" && p.position === 2;
         return (
           <div key={p.id} className="card grid gap-3">
             <div className="flex items-start justify-between gap-2 flex-wrap">

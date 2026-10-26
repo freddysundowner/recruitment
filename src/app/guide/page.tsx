@@ -5,7 +5,7 @@ import { getCtx } from "@/lib/session";
 import { SITE, jsonLd, siteUrl } from "@/lib/site";
 
 const TITLE = "How to use Recruitment Workspace: a simple step-by-step guide";
-const DESCRIPTION = "A simple guide for agency staff: set up, add employers and candidates, follow the nine steps, collect fees by M-Pesa and check in after travel.";
+const DESCRIPTION = "A simple guide for agency staff: set up, add employers and candidates, follow the five steps, collect fees by M-Pesa and check in after travel.";
 
 export const metadata: Metadata = {
   title: { absolute: TITLE },
@@ -20,7 +20,7 @@ const TOC: [string, string][] = [
   ["set-up", "1. Set up"],
   ["employers", "2. Employers and jobs"],
   ["candidates", "3. Candidates"],
-  ["stages", "4. The nine steps"],
+  ["stages", "4. The five steps"],
   ["money", "5. Money"],
   ["after", "6. After they travel"],
   ["portals", "7. Their own pages"],
@@ -29,15 +29,11 @@ const TOC: [string, string][] = [
 ];
 
 const STAGES: [string, string][] = [
-  ["Register", "Write down who they are. Tick that they agree to you keeping their details."],
-  ["Screen", "Check their ID, skills and work history. Fees that are due must be paid before they leave this step."],
-  ["Shortlist", "Match them to a job. Now the employer can see them."],
-  ["Interview and select", "The employer talks to them and picks. Check the employer first."],
-  ["Contract", "Save the contract the worker has and the one the employer has. They must say the same thing."],
-  ["Documents and medical", "Upload and check the passport, police clearance and medical report. Fees must be paid."],
-  ["Visa and travel", "The visa must be approved. The worker must finish orientation."],
-  ["Deployed", "The worker has travelled. Confirm they arrived."],
-  ["Follow-up", "Call them from time to time. Answer any complaint."],
+  ["New", "Write down who they are. Tick that they agree to you keeping their details. Check their ID, skills and work history."],
+  ["With employer", "Match them to a job. Now the employer can see them. The employer talks to them and decides."],
+  ["Selected", "The employer chose them. Save the contract the worker has and the one the employer has. They must say the same thing."],
+  ["Getting ready", "Upload and check the passport, police clearance and medical report. Fees must be paid. The visa must be approved and orientation done."],
+  ["Abroad", "The worker has travelled. The system sets reminders for you to call them from time to time. Answer any complaint."],
 ];
 
 function H2({ id, children }: { id: string; children: React.ReactNode }) {
@@ -149,8 +145,8 @@ export default async function Guide() {
             </Card>
           </div>
 
-          <H2 id="stages">4. The nine steps</H2>
-          <p>Every candidate is on one of nine steps. Open a candidate and read the box at the top. It shows what is missing and what is done. When nothing is missing, the button for the next step turns on.</p>
+          <H2 id="stages">4. The five steps</H2>
+          <p>Every candidate is on one of five steps. Open a candidate and read the box at the top. It shows what is missing and what is done. When nothing is missing, the button for the next step turns on.</p>
           <div className="card p-0 overflow-x-auto mt-4">
             <table className="table">
               <thead><tr><th>Step</th><th>What you need</th></tr></thead>

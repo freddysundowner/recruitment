@@ -79,7 +79,7 @@ export function GuidedPanel({ candidateId, guide, canMove, jobs }: {
           {ready && items.length === 0 && <p className="muted">Nothing is holding them back.</p>}
           {needsJobSoon && canMove && jobs.length > 0 && (
             <div className="mt-2 pt-2 border-t border-[var(--line)]">
-              <div className="font-semibold">Match them to a job <span className="muted font-normal">(needed from Shortlist)</span></div>
+              <div className="font-semibold">Match them to a job <span className="muted font-normal">(needed before the employer sees them)</span></div>
               {assign}
             </div>
           )}

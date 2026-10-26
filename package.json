@@ -15,7 +15,7 @@
     "platform:admin": "tsx scripts/create-platform-admin.ts",
     "license:keys": "tsx scripts/license-keys.ts generate",
     "license:issue": "tsx scripts/license-keys.ts issue",
-    "e2e": "node e2e/journey.mjs && node e2e/platform-and-mobile.mjs"
+    "e2e": "node e2e/journey.mjs && node e2e/employer-decision.mjs && node e2e/platform-and-mobile.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1156.0",

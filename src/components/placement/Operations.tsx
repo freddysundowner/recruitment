@@ -80,10 +80,10 @@ export async function Operations({ placementId, tenantId, canEdit, pos, focus }:
         </Section>
       )}
 
-      {(pos >= 4 || d.contracts.length > 0 || focus.includes("#contract")) && (
+      {(pos >= 3 || d.contracts.length > 0 || focus.includes("#contract")) && (
       <Section id="contract" title="Contract"
         status={contract.differences.length ? "copies differ" : contract.candidate && contract.employer ? "both copies agree" : d.contracts.length ? "one copy recorded" : "not recorded"}
-        tone={contract.differences.length ? "bad" : contract.candidate && contract.employer ? "good" : "warn"} open={focus.includes("#contract") || pos === 5}>
+        tone={contract.differences.length ? "bad" : contract.candidate && contract.employer ? "good" : "warn"} open={focus.includes("#contract") || pos === 3}>
         {contract.differences.length > 0 && (
           <div className="alert mb-3">The candidate&apos;s copy and the employer&apos;s copy differ on: {contract.differences.join(", ")}. This can mean the terms were changed. Do not proceed until it is explained.</div>
         )}
@@ -96,8 +96,8 @@ export async function Operations({ placementId, tenantId, canEdit, pos, focus }:
       </Section>
       )}
 
-      {(pos >= 6 || t || focus.includes("#travel")) && (
-      <Section id="travel" title="Visa and travel" status={`visa ${(t?.visa_status ?? "not started").replace("_", " ")}`} tone={t?.visa_status === "approved" ? "good" : t?.visa_status === "refused" ? "bad" : undefined} open={focus.includes("#travel") || pos === 7}>
+      {(pos >= 4 || t || focus.includes("#travel")) && (
+      <Section id="travel" title="Visa and travel" status={`visa ${(t?.visa_status ?? "not started").replace("_", " ")}`} tone={t?.visa_status === "approved" ? "good" : t?.visa_status === "refused" ? "bad" : undefined} open={focus.includes("#travel") || pos === 4}>
         {canEdit ? (
           <ActionForm action={saveTravel.bind(null, placementId)} submit="Save travel details" resetOnSuccess={false}>
             <div className="grid sm:grid-cols-3 gap-3">

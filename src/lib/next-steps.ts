@@ -98,25 +98,21 @@ export const steps = {
   // ------------------------------------------------------------ pipeline
   jobAssigned: (placementId: string): Step => ({
     title: "Job order assigned",
-    body: "Next, move them to Shortlist so the employer can see them.",
+    body: "Next, move them to With employer so the employer can see them.",
     actions: [
-      { label: "Move to Shortlist", href: P(placementId, "#stage"), primary: true },
+      { label: "Move to With employer", href: P(placementId, "#stage"), primary: true },
       { label: "Add documents first", hint: "So the employer sees a complete profile", href: P(placementId, "#checklist") },
     ],
   }),
-  stageMoved: (placementId: string, position: number, stage: string, candidateId: string): Step => {
+  stageMoved: (placementId: string, position: number, stage: string, _candidateId: string): Step => {
     const here = P(placementId);
     const base = { title: `Moved to ${stage}`, actions: [] as StepAction[] };
     const common: StepAction[] = [{ label: "Back to the pipeline", href: "/pipeline" }];
     switch (position) {
-      case 2: return { ...base, body: "Check their ID and skills. Add any fees now.", actions: [{ label: "Add a fee", href: P(placementId, "#fees"), primary: true }, { label: "Match to a job order", href: `/candidates/${candidateId}#placement` }, ...common] };
-      case 3: return { ...base, body: "The employer has been told. Wait for their decision.", actions: [{ label: "Book an interview", href: P(placementId, "#appointments"), primary: true }, ...common] };
-      case 4: return { ...base, body: "Book the interview and tell the candidate.", actions: [{ label: "Book an appointment", href: P(placementId, "#appointments"), primary: true }, ...common] };
-      case 5: return { ...base, body: "Record the candidate's and the employer's contract copies.", actions: [{ label: "Record contract copies", href: P(placementId, "#contract"), primary: true }, ...common] };
-      case 6: return { ...base, body: "Verify the passport, police clearance and medical report.", actions: [{ label: "Verify documents", href: "/verify", primary: true }, { label: "See the checklist", href: P(placementId, "#checklist") }, ...common] };
-      case 7: return { ...base, body: "Record the visa and the pre-departure orientation.", actions: [{ label: "Record visa and travel", href: P(placementId, "#travel"), primary: true }, ...common] };
-      case 8: return { ...base, body: "The worker has travelled. Raise the employer's invoice.", actions: [{ label: "Raise the invoice", href: P(placementId, "#invoices"), primary: true }, { label: "See follow-up", href: "/follow-up" }, ...common] };
-      case 9: return { ...base, body: "Record each check-in as it happens.", actions: [{ label: "See follow-up", href: "/follow-up", primary: true }, { label: "Open the placement", href: here }] };
+      case 2: return { ...base, body: "The employer has been told. Book an interview, and wait for their decision.", actions: [{ label: "Book an interview", href: P(placementId, "#appointments"), primary: true }, ...common] };
+      case 3: return { ...base, body: "Record the candidate's and the employer's contract copies.", actions: [{ label: "Record contract copies", href: P(placementId, "#contract"), primary: true }, ...common] };
+      case 4: return { ...base, body: "Verify the passport, police clearance and medical report, collect any fees, then record the visa and orientation.", actions: [{ label: "Record visa and travel", href: P(placementId, "#travel"), primary: true }, { label: "Verify documents", href: "/verify" }, { label: "See the checklist", href: P(placementId, "#checklist") }, ...common] };
+      case 5: return { ...base, body: "The worker has travelled. Raise the employer's invoice. Check-in reminders are already set.", actions: [{ label: "Raise the invoice", href: P(placementId, "#invoices"), primary: true }, { label: "See follow-up", href: "/follow-up" }, ...common] };
       default: return { ...base, actions: [{ label: "Open the placement", href: here, primary: true }, ...common] };
     }
   },
@@ -127,7 +123,7 @@ export const steps = {
   }),
   applicationDecided: (placementId: string | null, decision: "shortlisted" | "declined"): Step =>
     decision === "shortlisted" && placementId
-      ? { title: "Applicant matched to the job", body: "Move them to Shortlist so the employer can see them.", actions: [{ label: "Move to Shortlist", href: P(placementId, "#stage"), primary: true }, { label: "Back to job orders", href: "/job-orders" }] }
+      ? { title: "Applicant matched to the job", body: "Move them to With employer so the employer can see them.", actions: [{ label: "Move to With employer", href: P(placementId, "#stage"), primary: true }, { label: "Back to job orders", href: "/job-orders" }] }
       : { title: "Applicant declined", actions: [{ label: "Back to job orders", href: "/job-orders", primary: true }] },
 
   // ------------------------------------------------------------ contract, travel, appointments, follow-up
@@ -142,7 +138,7 @@ export const steps = {
   }),
   travelSaved: (placementId: string): Step => ({
     title: "Visa and travel saved",
-    body: "Once the visa is approved and orientation is done, they can be deployed.",
+    body: "Once the visa is approved, orientation is done, documents are verified and fees are paid, they can move to Abroad.",
     actions: [{ label: "Move to the next stage", href: P(placementId, "#stage"), primary: true }, { label: "Book orientation", href: P(placementId, "#appointments") }],
   }),
   appointmentAdded: (placementId: string): Step => ({

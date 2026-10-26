@@ -51,7 +51,7 @@ export default async function Todo() {
         SELECT p.id, c.id AS cid, c.first_name, c.last_name, s.name AS stage,
                (current_date - COALESCE((SELECT max(h.created_at) FROM stage_history h WHERE h.placement_id = p.id AND h.to_stage_id = p.stage_id), p.created_at)::date) AS days
         FROM placements p JOIN candidates c ON c.id = p.candidate_id JOIN pipeline_stages s ON s.id = p.stage_id
-        WHERE p.outcome = 'active' AND s.position < 8)
+        WHERE p.outcome = 'active' AND s.position < 5)
       SELECT *, (SELECT count(*) FROM w WHERE days >= ${STUCK_DAYS})::int AS total FROM w WHERE days >= ${STUCK_DAYS} ORDER BY days DESC LIMIT ${SHOW}`,
     requests: admin ? await tx`
       SELECT r.kind, c.id AS cid, c.first_name, c.last_name, (SELECT count(*) FROM data_requests WHERE status = 'open')::int AS total

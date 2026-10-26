@@ -1,6 +1,6 @@
 // End-to-end walk through a brand-new agency in a real browser:
 //   node e2e/journey.mjs            (against http://localhost:3100)
-// It signs up, adds an employer, job order and candidate, takes the candidate through all nine stages,
+// It signs up, adds an employer, job order and candidate, takes the candidate through all five stages,
 // records money, and then opens every page in the sidebar. It fails on the first thing that does not work.
 import { chromium } from "playwright-core";
 import { mkdtempSync, writeFileSync, readdirSync } from "node:fs";
@@ -124,9 +124,9 @@ await step("register a candidate", async () => {
   candUrl = page.url().split("?")[0];
 });
 
-await step("guided panel starts at Register and offers Screen", async () => {
+await step("guided panel starts at New and offers With employer", async () => {
   await page.getByText("Do this now").waitFor();
-  await page.getByRole("button", { name: "Move to Screen" }).waitFor();
+  await page.getByRole("button", { name: "Move to With employer" }).waitFor();
 });
 
 const upload = async (type) => {
@@ -167,8 +167,8 @@ const moveTo = async (stage) => {
   await expectNext(`Moved to ${stage}`); await closeNext();
 };
 
-await step("move Register → Screen → Shortlist → Interview and select → Contract", async () => {
-  for (const s of ["Screen", "Shortlist", "Interview and select", "Contract"]) await moveTo(s);
+await step("move New → With employer → Selected", async () => {
+  for (const s of ["With employer", "Selected"]) await moveTo(s);
 });
 
 await step("contract: record both copies and move on", async () => {
@@ -181,23 +181,18 @@ await step("contract: record both copies and move on", async () => {
     await f.getByRole("button", { name: `Record ${party}'s copy` }).click();
     await expectNext("Contract copy recorded"); await closeNext();
   }
-  await moveTo("Documents and medical");
+  await moveTo("Getting ready");
 });
 
-await step("documents stage: Move is locked until three documents are verified", async () => {
+await step("getting ready: Move is locked until documents, visa and orientation are done", async () => {
   await go(candUrl);
   await page.getByText("Police clearance verified").waitFor();
-  if (!(await page.getByRole("button", { name: "Move to Visa and travel" }).isDisabled())) throw new Error("move button should be disabled");
+  if (!(await page.getByRole("button", { name: "Move to Abroad" }).isDisabled())) throw new Error("move button should be disabled");
   await upload("Police clearance"); await upload("Medical report"); await verifyAll();
   await go(candUrl);
-  if (await page.getByRole("button", { name: "Move to Visa and travel" }).isDisabled()) throw new Error("move button should be enabled");
-  await moveTo("Visa and travel");
-});
-
-await step("visa and travel: approve the visa and orientation, then deploy", async () => {
+  if (!(await page.getByRole("button", { name: "Move to Abroad" }).isDisabled())) throw new Error("move button should still be locked until the visa is approved");
   await go(`${candUrl}#travel`);
   await page.getByText("Visa approved").waitFor();
-  if (!(await page.getByRole("button", { name: "Move to Deployed" }).isDisabled())) throw new Error("deploy should be locked");
   await page.locator("select[name=visa_status]").selectOption("approved");
   await page.locator("input[name=visa_number]").fill("V123456");
   await page.locator("input[name=visa_expiry]").fill("2028-01-01");
@@ -205,18 +200,15 @@ await step("visa and travel: approve the visa and orientation, then deploy", asy
   await page.getByRole("button", { name: "Save travel details" }).click();
   await expectNext("Visa and travel saved"); await closeNext();
   await go(candUrl);
-  await page.getByRole("button", { name: "Move to Deployed", exact: true }).click();
-  await confirmYes("Move to Deployed"); await expectNext("Moved to Deployed"); await closeNext();
+  if (await page.getByRole("button", { name: "Move to Abroad" }).isDisabled()) throw new Error("move button should be enabled");
+  await moveTo("Abroad");
 });
 
-await step("deployed: confirm arrival, move to follow-up", async () => {
-  await go(`${candUrl}#travel`);
-  await page.locator("input[name=arrival_confirmed_on]").fill("2026-10-25");
-  await page.getByRole("button", { name: "Save travel details" }).click();
-  await expectNext(); await closeNext();
-  await moveTo("Follow-up");
+await step("abroad: last stage, check-in reminders are set", async () => {
   await go(candUrl);
   await page.getByText("This is the last stage").waitFor();
+  await go(`${BASE}/follow-up`);
+  await page.getByText("Wanjiru Kariuki").first().waitFor();
 });
 
 await step("money: add a cost, raise an invoice, record the payment", async () => {
@@ -293,7 +285,7 @@ await step("to do list and dashboard reflect the work", async () => {
   await go(`${BASE}/todo`);
   await page.locator("main h1").getByText("To do").waitFor();
   await go(`${BASE}/pipeline`);
-  await page.getByText("9. Follow-up").first().waitFor();
+  await page.getByText("5. Abroad").first().waitFor();
 });
 
 await step("a candidate can register through the agency page", async () => {

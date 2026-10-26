@@ -28,7 +28,7 @@ beforeAll(async () => {
 });
 
 describe("signup", () => {
-  it("creates an agency with its admin, nine stages and a trial", async () => {
+  it("creates an agency with its admin, five stages and a trial", async () => {
     const r = await sandbox(async (tx) => {
       const id = await newTenant(tx);
       const [t] = await tx`SELECT name, slug, plan FROM tenants`;
@@ -39,8 +39,8 @@ describe("signup", () => {
     });
     expect(r.t).toMatchObject({ slug: "acme-test", plan: "pro" });
     expect(r.users.map((u) => u.role)).toEqual(["admin"]);
-    expect(r.stages).toHaveLength(9);
-    expect(r.stages[4]).toMatchObject({ name: "Contract", requires_contract: true });
+    expect(r.stages).toHaveLength(5);
+    expect(r.stages[2]).toMatchObject({ name: "Selected", requires_contract: true });
     expect(r.s.status).toBe("trialing");
   });
 

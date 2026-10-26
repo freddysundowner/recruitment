@@ -37,7 +37,7 @@ const FEATURES = [
 
 const STEPS = [
   { n: "1", t: "Set up in minutes", d: "Create your workspace, add your team, your employers and your job orders. Import your existing candidates from a spreadsheet." },
-  { n: "2", t: "Move people through nine stages", d: "Each candidate's page shows what is missing before the next stage, with a button that unlocks when everything is done." },
+  { n: "2", t: "Move people through five simple stages", d: "Each candidate's page shows what is missing before the next stage, with a button that unlocks when everything is done." },
   { n: "3", t: "Collect, deploy, follow up", d: "Take fees by M-Pesa, raise invoices to employers, record visa and travel, and keep in touch after deployment." },
 ];
 
@@ -110,9 +110,9 @@ export default async function Welcome() {
               <span className="avatar" style={{ width: 40, height: 40 }}>GA</span>
               <div><div className="font-bold">Grace Achieng</div><div className="muted text-xs">Hotel housekeeper · United Arab Emirates</div></div>
             </div>
-            <div className="steps-strip mb-3">{Array.from({ length: 9 }, (_, i) => <i key={i} className={i < 5 ? "done" : i === 5 ? "now" : ""} />)}</div>
-            <div className="eyebrow mb-1">Do this now · Stage 6 of 9</div>
-            <div className="h2">Documents and medical</div>
+            <div className="steps-strip mb-3">{Array.from({ length: 5 }, (_, i) => <i key={i} className={i < 3 ? "done" : i === 3 ? "now" : ""} />)}</div>
+            <div className="eyebrow mb-1">Do this now · Stage 4 of 5</div>
+            <div className="h2">Getting ready</div>
             <ul className="mt-2">
               {[["Passport verified", true], ["Police clearance verified", true], ["Medical report verified", false], ["Fees paid", true]].map(([l, done]) => (
                 <li key={String(l)} className={`req ${done ? "done" : ""}`}>
@@ -122,7 +122,7 @@ export default async function Welcome() {
                 </li>
               ))}
             </ul>
-            <div className="btn btn-primary btn-lg mt-3" style={{ opacity: 0.55, pointerEvents: "none" }} aria-hidden="true">Move to Visa and travel</div>
+            <div className="btn btn-primary btn-lg mt-3" style={{ opacity: 0.55, pointerEvents: "none" }} aria-hidden="true">Move to Abroad</div>
           </div>
         </section>
 
@@ -156,7 +156,7 @@ export default async function Welcome() {
           <div className="card mt-6" style={{ padding: 22 }}>
             <div className="eyebrow mb-3">A candidate&apos;s journey</div>
             <ol className="grid sm:grid-cols-3 gap-x-6 gap-y-2.5">
-              {["Register", "Screen", "Shortlist", "Interview and select", "Contract", "Documents and medical", "Visa and travel", "Deployed", "Follow-up"].map((s, i) => (
+              {["New", "With employer", "Selected", "Getting ready", "Abroad"].map((s, i) => (
                 <li key={s} className="flex items-center gap-3">
                   <span className="badge badge-brand" style={{ width: 26, height: 26, justifyContent: "center", padding: 0 }}>{i + 1}</span>
                   <span className="font-semibold">{s}</span>

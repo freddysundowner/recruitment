@@ -49,7 +49,7 @@ export default async function PipelineSettings() {
         </ActionForm>
       </SettingsCard>
 
-      <SettingsCard title="Pipeline stages" desc="The nine stages every candidate goes through, and the rules that stop a candidate moving on until they are met. Only an admin can override a rule, and must give a reason.">
+      <SettingsCard title="Pipeline stages" desc="The five stages every candidate goes through, and the rules that stop a candidate moving on until they are met. Only an admin can override a rule, and must give a reason.">
         <div className="overflow-x-auto -mx-[18px]">
           <table className="table">
             <thead><tr><th>#</th><th>Stage</th><th>Before leaving this stage</th></tr></thead>

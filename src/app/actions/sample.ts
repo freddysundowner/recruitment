@@ -13,14 +13,14 @@ const PEOPLE: [string, string, string, string, number, number | null][] = [
   // first, last, county, skills, stage position, job index
   ["Amina", "Wanjiru", "Nairobi", "Housekeeping, cooking", 1, null],
   ["Brian", "Otieno", "Kisumu", "Driving, customer service", 1, null],
-  ["Caroline", "Mutua", "Machakos", "Nursing, first aid", 2, null],
-  ["David", "Kiptoo", "Eldoret", "Housekeeping, laundry", 3, 0],
-  ["Esther", "Njeri", "Nakuru", "Registered nurse, 6 years", 4, 1],
-  ["Felix", "Mwangi", "Nairobi", "Registered nurse, ICU", 5, 1],
-  ["Grace", "Achieng", "Kisumu", "Housekeeping, supervision", 6, 0],
-  ["Hassan", "Abdi", "Mombasa", "Electrician, site work", 3, 2],
-  ["Irene", "Chebet", "Kericho", "Registered nurse, theatre", 2, null],
-  ["John", "Kamau", "Thika", "Housekeeping, front desk", 8, 0],
+  ["Caroline", "Mutua", "Machakos", "Nursing, first aid", 1, null],
+  ["David", "Kiptoo", "Eldoret", "Housekeeping, laundry", 2, 0],
+  ["Esther", "Njeri", "Nakuru", "Registered nurse, 6 years", 2, 1],
+  ["Felix", "Mwangi", "Nairobi", "Registered nurse, ICU", 3, 1],
+  ["Grace", "Achieng", "Kisumu", "Housekeeping, supervision", 4, 0],
+  ["Hassan", "Abdi", "Mombasa", "Electrician, site work", 2, 2],
+  ["Irene", "Chebet", "Kericho", "Registered nurse, theatre", 1, null],
+  ["John", "Kamau", "Thika", "Housekeeping, front desk", 5, 0],
 ];
 
 /** Fills the workspace with a small, realistic set of records so every screen has something to show. */
@@ -61,19 +61,19 @@ export async function loadSampleData(_: FormState): Promise<FormState> {
         const job = jobIdx === null ? null : jobs[jobIdx];
         const [p] = await tx`
           INSERT INTO placements (tenant_id, candidate_id, job_order_id, stage_id, payment_model, outcome)
-          VALUES (${T}, ${c.id}, ${job?.id ?? null}, ${await stage(pos)}, ${job?.payment_model ?? null}, ${pos >= 8 ? "deployed" : "active"}) RETURNING id`;
+          VALUES (${T}, ${c.id}, ${job?.id ?? null}, ${await stage(pos)}, ${job?.payment_model ?? null}, ${pos >= 5 ? "deployed" : "active"}) RETURNING id`;
         await tx`INSERT INTO stage_history (tenant_id, placement_id, to_stage_id, user_id, note) VALUES (${T}, ${p.id}, ${await stage(pos)}, ${ctx.userId}, 'Sample record')`;
-        if (pos >= 8) await tx`UPDATE candidates SET status = 'placed' WHERE id = ${c.id}`;
+        if (pos >= 5) await tx`UPDATE candidates SET status = 'placed' WHERE id = ${c.id}`;
 
         // Documents: verified for people who are further along, waiting for the rest
-        const verified = pos >= 5;
+        const verified = pos >= 3;
         for (const [type, days] of [["Passport", i === 3 ? 40 : 900], ["National ID", null]] as [string, number | null][]) {
           await tx`
             INSERT INTO documents (tenant_id, candidate_id, doc_type, doc_number_enc, expiry_date, file_key, file_name, mime_type, status, verified_by, verified_at)
             VALUES (${T}, ${c.id}, ${type}, ${encrypt(`${type.slice(0, 1)}${idn}`)}, ${days === null ? null : tx`current_date + ${days}::int`}, 'seed/none', ${type.toLowerCase().replace(" ", "-") + ".pdf"},
                     'application/pdf', ${verified ? "verified" : "pending"}, ${verified ? ctx.userId : null}, ${verified ? tx`now()` : null})`;
         }
-        if (pos >= 6) {
+        if (pos >= 4) {
           for (const type of ["Police clearance", "Medical report"]) {
             await tx`
               INSERT INTO documents (tenant_id, candidate_id, doc_type, expiry_date, file_key, file_name, mime_type, status, verified_by, verified_at)
@@ -81,7 +81,7 @@ export async function loadSampleData(_: FormState): Promise<FormState> {
           }
         }
         // Money
-        if (job?.payment_model === "employer_paid" && pos >= 5) {
+        if (job?.payment_model === "employer_paid" && pos >= 3) {
           await tx`INSERT INTO costs (tenant_id, placement_id, category, amount_minor, payee, incurred_on, receipt_ref, created_by) VALUES
             (${T}, ${p.id}, 'Passport', 450000, 'Immigration (sample)', current_date - 12, 'R-1042', ${ctx.userId}),
             (${T}, ${p.id}, 'Medical', 850000, 'Afya Clinic (sample)', current_date - 6, 'R-1077', ${ctx.userId})`;
@@ -93,15 +93,15 @@ export async function loadSampleData(_: FormState): Promise<FormState> {
           await tx`INSERT INTO payments (tenant_id, receipt_no, party, placement_id, method, amount_minor, currency, reference, created_by)
                    VALUES (${T}, ${receipt}, 'candidate', ${p.id}, 'mpesa', 200000, 'KES', 'SAMPLE001', ${ctx.userId})`;
         }
-        if (pos === 4) {
+        if (pos === 2 && i === 5) {
           await tx`INSERT INTO appointments (tenant_id, placement_id, kind, scheduled_at, location, created_by)
                    VALUES (${T}, ${p.id}, 'interview', now() + interval '2 days', 'Video call (sample)', ${ctx.userId})`;
         }
-        if (pos === 5) {
+        if (pos === 3) {
           await tx`INSERT INTO contracts (tenant_id, placement_id, party, salary_minor, currency, hours_per_week, months, recorded_by) VALUES
             (${T}, ${p.id}, 'candidate', 110000, 'USD', 48, 24, ${ctx.userId}), (${T}, ${p.id}, 'employer', 110000, 'USD', 48, 24, ${ctx.userId})`;
         }
-        if (pos === 8) {
+        if (pos === 5) {
           await tx`INSERT INTO placement_travel (placement_id, tenant_id, visa_status, visa_number, visa_expiry, departure_on, orientation_done_on, arrival_confirmed_on, employer_start_on)
                    VALUES (${p.id}, ${T}, 'approved', 'SAMPLE-VISA', current_date + 700, current_date - 40, current_date - 45, current_date - 39, current_date - 38)`;
           for (const days of [30, 90, 180]) await tx`INSERT INTO checkins (tenant_id, placement_id, due_on) VALUES (${T}, ${p.id}, current_date + ${days - 40}::int)`;

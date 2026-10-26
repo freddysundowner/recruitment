@@ -41,11 +41,11 @@ describe("contract gate", () => {
     expect(pipe.diffContracts(a, { ...a, currency: "USD", hours_per_week: 60 })).toEqual(["currency", "hours per week"]);
   });
 
-  it("blocks leaving Contract with no copies, with mismatched copies, and allows matching copies", async () => {
+  it("blocks leaving Selected with no copies, with mismatched copies, and allows matching copies", async () => {
     const r = await sandbox(async (tx) => {
-      const f = await freshPlacement(tx, demo.tenant_id, { stage: 5, job: "vetted" });
+      const f = await freshPlacement(tx, demo.tenant_id, { stage: 3, job: "vetted" });
       const p = { id: f.placementId };
-      const next = await f.stageId(6);
+      const next = await f.stageId(4);
       const none = await pipe.moveStage(tx, actor("recruiter"), p.id, next, "", false);
       const ins = (party: string, salary: number) => tx`
         INSERT INTO contracts (tenant_id, placement_id, party, salary_minor, currency, hours_per_week, months)
@@ -61,17 +61,17 @@ describe("contract gate", () => {
     if (!r.none.ok) expect(r.none.error).toMatch(/Record both/);
     expect(r.mismatch.ok).toBe(false);
     if (!r.mismatch.ok) expect(r.mismatch.error).toMatch(/differ on: salary/);
-    // Stage 6 also needs documents, so only the contract problem is gone, not every gate.
+    // Moving into Getting ready only needs the job and a vetted employer, so the contract was the one thing in the way.
     expect(r.match.ok).toBe(true);
   });
 });
 
 describe("visa and travel gates", () => {
-  it("blocks leaving Visa and travel until the visa is approved and orientation is done", async () => {
+  it("blocks leaving Getting ready until the visa is approved and orientation is done", async () => {
     const r = await sandbox(async (tx) => {
-      const f = await freshPlacement(tx, demo.tenant_id, { stage: 7, job: "vetted" });
+      const f = await freshPlacement(tx, demo.tenant_id, { stage: 4, job: "vetted", docs: ["Passport", "Police clearance", "Medical report"], userId: demo.id });
       const p = { id: f.placementId };
-      const next = await f.stageId(8);
+      const next = await f.stageId(5);
       const blocked = await pipe.moveStage(tx, actor("recruiter"), p.id, next, "", false);
       await tx`INSERT INTO placement_travel (placement_id, tenant_id, visa_status, visa_number) VALUES (${p.id}, ${demo.tenant_id}, 'applied', 'V1')`;
       const applied = await pipe.moveStage(tx, actor("recruiter"), p.id, next, "", false);
@@ -83,11 +83,7 @@ describe("visa and travel gates", () => {
       const ok = await pipe.moveStage(tx, actor("recruiter"), p.id, next, "", false);
       const [pl] = await tx`SELECT outcome FROM placements WHERE id = ${p.id}`;
       const checkins = await tx`SELECT due_on - current_date AS days FROM checkins WHERE placement_id = ${p.id} ORDER BY due_on`;
-      // leaving Deployed needs arrival confirmed
-      const leave = await pipe.moveStage(tx, actor("recruiter"), p.id, await f.stageId(9), "", false);
-      await tx`UPDATE placement_travel SET arrival_confirmed_on = current_date WHERE placement_id = ${p.id}`;
-      const left = await pipe.moveStage(tx, actor("recruiter"), p.id, await f.stageId(9), "", false);
-      return { blocked, applied, expired, noOrientation, ok, outcome: pl.outcome, days: checkins.map((c) => Number(c.days)), leave, left };
+      return { blocked, applied, expired, noOrientation, ok, outcome: pl.outcome, days: checkins.map((c) => Number(c.days)) };
     });
     expect(r.blocked.ok).toBe(false);
     expect(r.applied.ok).toBe(false);
@@ -98,18 +94,16 @@ describe("visa and travel gates", () => {
     expect(r.ok.ok).toBe(true);
     expect(r.outcome).toBe("deployed");
     expect(r.days).toEqual([30, 90, 180]);
-    expect(r.leave.ok).toBe(false);
-    if (!r.leave.ok) expect(r.leave.error).toMatch(/Arrival has not been confirmed/);
-    expect(r.left.ok).toBe(true);
   });
 });
 
 describe("country checklists", () => {
   it("replace the stage's default document list for that country", async () => {
     const r = await sandbox(async (tx) => {
-      const f = await freshPlacement(tx, demo.tenant_id, { stage: 6, job: "vetted", docs: ["Passport"], userId: demo.id });
+      const f = await freshPlacement(tx, demo.tenant_id, { stage: 4, job: "vetted", docs: ["Passport"], userId: demo.id });
       const p = { id: f.placementId };
-      const next = await f.stageId(7);
+      const next = await f.stageId(5);
+      await tx`INSERT INTO placement_travel (placement_id, tenant_id, visa_status, visa_number, visa_expiry, orientation_done_on) VALUES (${p.id}, ${demo.tenant_id}, 'approved', 'V1', current_date + 200, current_date)`;
       const before = await pipe.moveStage(tx, actor("recruiter"), p.id, next, "", false);
       const [j] = await tx`SELECT j.country FROM placements p JOIN job_orders j ON j.id = p.job_order_id WHERE p.id = ${p.id}`;
       await tx`INSERT INTO country_checklists (tenant_id, country, required_doc_types) VALUES (${demo.tenant_id}, ${j.country}, ${["Passport"]})

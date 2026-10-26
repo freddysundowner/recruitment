@@ -85,10 +85,10 @@ describe("append-only tables", () => {
 describe("pipeline gates", () => {
   const ctx = (role: "admin" | "recruiter") => ({ userId: demo.id, tenantId: demo.tenant_id, role, name: "t" });
 
-  it("blocks leaving Documents and medical without verified required documents", async () => {
+  it("blocks leaving Getting ready without verified required documents", async () => {
     const r = await sandbox(demo.tenant_id, async (tx) => {
-      const f = await freshPlacement(tx, demo.tenant_id, { stage: 6, job: "vetted", docs: ["Passport"], userId: demo.id });
-      return pipe.moveStage(tx, ctx("recruiter"), f.placementId, await f.stageId(7), "", false);
+      const f = await freshPlacement(tx, demo.tenant_id, { stage: 4, job: "vetted", docs: ["Passport"], userId: demo.id });
+      return pipe.moveStage(tx, ctx("recruiter"), f.placementId, await f.stageId(5), "", false);
     });
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.error).toMatch(/Missing verified documents: Police clearance, Medical report/);
@@ -97,7 +97,7 @@ describe("pipeline gates", () => {
   it("the checklist on the page agrees with what moving would do", async () => {
     const rows = await sandbox(demo.tenant_id, async (tx) => {
       const out: { stage: number; ready: boolean; moved: boolean }[] = [];
-      for (const [stage, docs] of [[1, []], [2, []], [3, []], [5, []], [6, []], [6, ["Passport", "Police clearance", "Medical report"]], [7, []]] as [number, string[]][]) {
+      for (const [stage, docs] of [[1, []], [2, []], [3, []], [4, []], [4, ["Passport", "Police clearance", "Medical report"]]] as [number, string[]][]) {
         for (const job of ["vetted", "unvetted", null] as const) {
           const f = await freshPlacement(tx, demo.tenant_id, { stage, job, docs, userId: demo.id });
           const subject = await pipe.gateSubject(tx, f.placementId);
@@ -114,12 +114,12 @@ describe("pipeline gates", () => {
 
   it("the vetting and contract rules can be switched off in Settings", async () => {
     const r = await sandbox(demo.tenant_id, async (tx) => {
-      const f = await freshPlacement(tx, demo.tenant_id, { stage: 3, job: "unvetted", userId: demo.id });
-      const before = await pipe.moveStage(tx, ctx("recruiter"), f.placementId, await f.stageId(4), "", false);
+      const f = await freshPlacement(tx, demo.tenant_id, { stage: 2, job: "unvetted", userId: demo.id });
+      const before = await pipe.moveStage(tx, ctx("recruiter"), f.placementId, await f.stageId(3), "", false);
       await tx`UPDATE tenants SET settings = settings || '{"rules": {"require_vetting": false, "contract_check": false}}'::jsonb`;
-      const after = await pipe.moveStage(tx, ctx("recruiter"), f.placementId, await f.stageId(4), "", false);
-      const g = await freshPlacement(tx, demo.tenant_id, { stage: 5, job: "vetted", userId: demo.id });
-      const noContract = await pipe.moveStage(tx, ctx("recruiter"), g.placementId, await g.stageId(6), "", false);
+      const after = await pipe.moveStage(tx, ctx("recruiter"), f.placementId, await f.stageId(3), "", false);
+      const g = await freshPlacement(tx, demo.tenant_id, { stage: 3, job: "vetted", userId: demo.id });
+      const noContract = await pipe.moveStage(tx, ctx("recruiter"), g.placementId, await g.stageId(4), "", false);
       return { before, after, noContract };
     });
     expect(r.before.ok).toBe(false);
@@ -129,8 +129,8 @@ describe("pipeline gates", () => {
 
   it("only an admin can override, and only with a reason", async () => {
     const r = await sandbox(demo.tenant_id, async (tx) => {
-      const f = await freshPlacement(tx, demo.tenant_id, { stage: 6, job: "vetted", userId: demo.id });
-      const to = await f.stageId(7);
+      const f = await freshPlacement(tx, demo.tenant_id, { stage: 4, job: "vetted", userId: demo.id });
+      const to = await f.stageId(5);
       const asRecruiter = await pipe.moveStage(tx, ctx("recruiter"), f.placementId, to, "please", true);
       const noReason = await pipe.moveStage(tx, ctx("admin"), f.placementId, to, "", true);
       const ok = await pipe.moveStage(tx, ctx("admin"), f.placementId, to, "Docs held by embassy", true);
@@ -143,23 +143,20 @@ describe("pipeline gates", () => {
     expect(r.override).toBe(true);
   });
 
-  it("blocks a candidate without a job order from entering Shortlist", async () => {
+  it("blocks a candidate without a job order from entering With employer", async () => {
     const r = await sandbox(demo.tenant_id, async (tx) => {
       const f = await freshPlacement(tx, demo.tenant_id, { stage: 1, job: null });
-      // Stage 2 has requires_payment but no charges exist, so this passes; stage 3 needs a job order.
-      const a = await pipe.moveStage(tx, ctx("recruiter"), f.placementId, await f.stageId(2), "", false);
-      const b = await pipe.moveStage(tx, ctx("recruiter"), f.placementId, await f.stageId(3), "", false);
-      return { a, b };
+      return pipe.moveStage(tx, ctx("recruiter"), f.placementId, await f.stageId(2), "", false);
     });
-    expect(r.a.ok).toBe(true);
-    expect(r.b.ok).toBe(false);
-    if (!r.b.ok) expect(r.b.error).toMatch(/job order/);
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.error).toMatch(/job order/);
   });
 
-  it("blocks leaving Screen while fees that are due are unpaid, then allows it once paid", async () => {
+  it("blocks leaving Getting ready while fees that are due are unpaid, then allows it once paid", async () => {
     const r = await sandbox(demo.tenant_id, async (tx) => {
-      const f = await freshPlacement(tx, demo.tenant_id, { stage: 2, job: "vetted" });
-      const next = await f.stageId(3);
+      const f = await freshPlacement(tx, demo.tenant_id, { stage: 4, job: "vetted", docs: ["Passport", "Police clearance", "Medical report"], userId: demo.id });
+      const next = await f.stageId(5);
+      await tx`INSERT INTO placement_travel (placement_id, tenant_id, visa_status, visa_number, visa_expiry, orientation_done_on) VALUES (${f.placementId}, ${demo.tenant_id}, 'approved', 'V1', current_date + 200, current_date)`;
       // A fee that is due today, and a later instalment that is not due yet.
       await tx`INSERT INTO fee_charges (tenant_id, placement_id, fee_type, amount_minor, due_on)
                VALUES (${demo.tenant_id}, ${f.placementId}, 'Registration', 500000, current_date),
@@ -179,10 +176,10 @@ describe("pipeline gates", () => {
     expect(r.allowed.ok).toBe(true);
   });
 
-  it("blocks entering Interview when the employer is not vetted", async () => {
+  it("blocks entering Selected when the employer is not vetted", async () => {
     const r = await sandbox(demo.tenant_id, async (tx) => {
-      const f = await freshPlacement(tx, demo.tenant_id, { stage: 3, job: "unvetted" });
-      return pipe.moveStage(tx, ctx("recruiter"), f.placementId, await f.stageId(4), "", false);
+      const f = await freshPlacement(tx, demo.tenant_id, { stage: 2, job: "unvetted" });
+      return pipe.moveStage(tx, ctx("recruiter"), f.placementId, await f.stageId(3), "", false);
     });
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.error).toMatch(/not been vetted/);
