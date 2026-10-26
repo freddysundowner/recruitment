@@ -75,7 +75,7 @@ check(sm.ok() && sx.includes("<loc>") && sx.includes("/guide"), "sitemap.xml lis
 check((await page.request.get(`${BASE}/icon`)).ok(), "the site icon loads");
 
 // Behind nginx the request carries the visitor's address in headers; the front page must still work.
-const behind = await page.request.get(`${BASE}/`, { headers: { Host: "recruit.example.com", "X-Forwarded-Proto": "https", "X-Forwarded-For": "203.0.113.5" } });
+const behind = await page.request.get(`${BASE}/`, { headers: { Host: new URL(BASE).host, "X-Forwarded-Proto": "https", "X-Forwarded-For": "203.0.113.5" } });
 check(behind.status() === 200, "the front page works behind nginx (forwarded host and https)");
 
 // Private pages must tell search engines to stay away.
