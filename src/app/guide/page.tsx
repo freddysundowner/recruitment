@@ -5,7 +5,7 @@ import { getCtx } from "@/lib/session";
 import { SITE, jsonLd, siteUrl } from "@/lib/site";
 
 const TITLE = "How to use Recruitment Workspace: a simple step-by-step guide";
-const DESCRIPTION = "A plain guide for agency staff: set up, add employers and candidates, work through the nine stages, collect fees by M-Pesa and follow up.";
+const DESCRIPTION = "A simple guide for agency staff: set up, add employers and candidates, follow the nine steps, collect fees by M-Pesa and check in after travel.";
 
 export const metadata: Metadata = {
   title: { absolute: TITLE },
@@ -16,38 +16,41 @@ export const metadata: Metadata = {
 };
 
 const TOC: [string, string][] = [
-  ["quick-start", "Quick start"],
-  ["set-up", "1. Set up your agency"],
-  ["employers", "2. Employers and job orders"],
-  ["candidates", "3. Candidates and documents"],
-  ["stages", "4. The nine stages"],
+  ["quick-start", "Start here"],
+  ["set-up", "1. Set up"],
+  ["employers", "2. Employers and jobs"],
+  ["candidates", "3. Candidates"],
+  ["stages", "4. The nine steps"],
   ["money", "5. Money"],
-  ["after", "6. After they fly"],
-  ["portals", "7. Candidate and employer pages"],
-  ["messages", "8. Messages and SMS credits"],
-  ["daily", "9. Every day"],
+  ["after", "6. After they travel"],
+  ["portals", "7. Their own pages"],
+  ["messages", "8. Texts and credits"],
+  ["daily", "9. Each day"],
 ];
 
 const STAGES: [string, string][] = [
-  ["Register", "Their details and their consent to keep them."],
-  ["Screen", "Check their ID, skills and experience. Any fees that are due must be paid before they leave this stage."],
-  ["Shortlist", "They are matched to a job order. This is when the employer can see them."],
-  ["Interview and select", "The employer interviews and chooses. The employer should be vetted first."],
-  ["Contract", "Record the candidate's copy and the employer's copy of the contract. They must agree."],
-  ["Documents and medical", "Passport, police clearance and medical report must be uploaded and verified. Fees must be paid."],
-  ["Visa and travel", "The visa must be approved and the orientation done."],
-  ["Deployed", "They have travelled. Confirm their arrival."],
-  ["Follow-up", "Check in on them while they work, and answer any complaint."],
+  ["Register", "Write down who they are. Tick that they agree to you keeping their details."],
+  ["Screen", "Check their ID, skills and work history. Fees that are due must be paid before they leave this step."],
+  ["Shortlist", "Match them to a job. Now the employer can see them."],
+  ["Interview and select", "The employer talks to them and picks. Check the employer first."],
+  ["Contract", "Save the contract the worker has and the one the employer has. They must say the same thing."],
+  ["Documents and medical", "Upload and check the passport, police clearance and medical report. Fees must be paid."],
+  ["Visa and travel", "The visa must be approved. The worker must finish orientation."],
+  ["Deployed", "The worker has travelled. Confirm they arrived."],
+  ["Follow-up", "Call them from time to time. Answer any complaint."],
 ];
 
 function H2({ id, children }: { id: string; children: React.ReactNode }) {
-  return <h2 id={id} className="h1 mt-12 mb-3" style={{ fontSize: 24, scrollMarginTop: 80 }}>{children}</h2>;
+  return <h2 id={id} className="h1 mt-12 mb-4" style={{ fontSize: 26, scrollMarginTop: 80 }}>{children}</h2>;
 }
 function Steps({ children }: { children: React.ReactNode }) {
-  return <ol className="grid gap-2.5 list-decimal pl-5 marker:font-bold marker:text-[var(--brand)]">{children}</ol>;
+  return <ol className="grid gap-3 list-decimal pl-5 marker:font-bold marker:text-[var(--brand)] text-[16px]">{children}</ol>;
 }
 function Tip({ children }: { children: React.ReactNode }) {
-  return <div className="notice mt-3">{children}</div>;
+  return <div className="notice mt-4 text-[15px]"><b>Tip: </b>{children}</div>;
+}
+function Card({ title, children }: { title?: string; children: React.ReactNode }) {
+  return <div className="card text-[16px]">{title && <h3 className="h2 mb-2">{title}</h3>}{children}</div>;
 }
 
 export default async function Guide() {
@@ -62,13 +65,13 @@ export default async function Guide() {
     <div className="min-h-screen bg-white">
       {structured.map((s, i) => <script key={i} type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(s) }} />)}
       <header className="border-b border-[var(--line)]">
-        <div className="w-full lg:w-4/5 mx-auto px-5 py-3.5 flex items-center justify-between gap-3">
+        <div className="w-full px-5 lg:px-10 py-3.5 flex items-center justify-between gap-3">
           <Link href="/" className="flex items-center gap-2.5 font-bold text-[17px]"><span className="brand-mark"><Globe2 size={18} /></span> {SITE.name}</Link>
           {signedIn ? <Link href="/" className="btn">Back to the app</Link> : <Link href="/login" className="btn">Sign in</Link>}
         </div>
       </header>
 
-      <div className="w-full lg:w-4/5 mx-auto px-5 py-10 grid lg:grid-cols-[220px_1fr] gap-10">
+      <div className="w-full px-5 lg:px-10 py-10 grid lg:grid-cols-[220px_1fr] gap-10">
         <nav aria-label="On this page" className="hidden lg:block">
           <div className="sticky top-6">
             <div className="eyebrow mb-2">On this page</div>
@@ -78,109 +81,140 @@ export default async function Guide() {
           </div>
         </nav>
 
-        <main className="max-w-3xl min-w-0">
+        <main className="min-w-0 w-full text-[16px] leading-relaxed">
           <nav aria-label="Breadcrumb" className="muted text-sm mb-3"><Link className="link" href="/">Home</Link> / Guide</nav>
-          <h1 style={{ fontSize: 36, lineHeight: 1.15, letterSpacing: "-0.02em", fontWeight: 800 }}>How to use {SITE.name}</h1>
-          <p className="muted mt-3 text-[17px]">A plain guide for agency staff. You do not need to read all of it. The system tells you what to do next after every step, and this page is here when you want the bigger picture.</p>
+          <h1 style={{ fontSize: 38, lineHeight: 1.15, letterSpacing: "-0.02em", fontWeight: 800 }}>How to use {SITE.name}</h1>
+          <p className="muted mt-3 text-[18px]">This guide is short and simple. You do not have to read all of it. After every step, the system tells you what to do next.</p>
 
-          <H2 id="quick-start">Quick start</H2>
-          <div className="card">
-            <p>If you only have ten minutes, do these in order:</p>
+          <H2 id="quick-start">Start here</H2>
+          <Card title="Your first ten minutes">
             <Steps>
-              <li><b>Add your team</b> in Settings, Team. Give each person the role that fits their work.</li>
-              <li><b>Add an employer</b> in Employers, and record how you checked them.</li>
-              <li><b>Create a job order</b> in Job orders: the role, the country, how many workers and who pays the costs.</li>
-              <li><b>Add your candidates</b> in Candidates, one by one or all at once from a spreadsheet.</li>
-              <li><b>Open a candidate.</b> The box at the top, &ldquo;Do this now&rdquo;, lists what is left before they can move on.</li>
-              <li><b>Share your candidate page</b> from Settings, General, so people can register from their phones.</li>
+              <li><b>Add your staff.</b> Go to Settings, then Team. Pick a role for each person.</li>
+              <li><b>Add an employer.</b> Go to Employers. Write down how you checked them.</li>
+              <li><b>Add a job.</b> Go to Job orders. Say what job it is, which country, and how many people.</li>
+              <li><b>Add your candidates.</b> Go to Candidates. Add one at a time, or load a whole spreadsheet.</li>
+              <li><b>Open a candidate.</b> The box at the top says what to do next.</li>
+              <li><b>Share your link.</b> It is in Settings, then General. Candidates use it to sign up on their phones.</li>
             </Steps>
-            <Tip>New to the system? Use the sample data on the Getting started page to click around safely. You can remove it with one button.</Tip>
+            <Tip>Want to practise first? Use the sample data on the Getting started page. You can delete it with one button.</Tip>
+          </Card>
+
+          <H2 id="set-up">1. Set up</H2>
+          <p>Everything here is in <b>Settings</b>. Pick a part on the left.</p>
+          <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-4 mt-4">
+            <Card title="General">Your agency name and colour. Your link for candidates.</Card>
+            <Card title="Team">Add your staff. Recruiters work with candidates. Document staff check papers. Finance staff handle money. Admins can do everything.</Card>
+            <Card title="Pipeline and checklists">Say which papers each country needs. Switch on two optional rules when you are ready: use only checked employers, and compare the two contracts.</Card>
+            <Card title="Payments">Add your M-Pesa paybill or till. Then candidates can pay fees from their phones.</Card>
+            <Card title="Messages">Pick how you contact candidates. Add your own sender name. See your text credits.</Card>
+            <Card title="Security">Turn on two-step sign-in for everyone. It keeps accounts safe.</Card>
           </div>
 
-          <H2 id="set-up">1. Set up your agency</H2>
-          <p>Everything here is under <b>Settings</b>. The left side lists the sections.</p>
-          <ul className="grid gap-2 mt-3 list-disc pl-5">
-            <li><b>General:</b> your agency&apos;s name, colour, and the web address candidates use to register.</li>
-            <li><b>Team:</b> add staff. Recruiters work with candidates, documentation officers check documents, finance officers handle money, and admins can do everything.</li>
-            <li><b>Pipeline and checklists:</b> the documents each country needs, and two rules you can switch on when you are ready: only using vetted employers, and comparing contract copies.</li>
-            <li><b>Payments:</b> your M-Pesa paybill or till, so candidates can pay fees from their phones.</li>
-            <li><b>Messages:</b> choose how candidates are contacted, connect your own sender name, and see your SMS credits.</li>
-            <li><b>Security:</b> turn on two-step sign-in for everyone.</li>
-          </ul>
+          <H2 id="employers">2. Employers and jobs</H2>
+          <div className="grid lg:grid-cols-2 gap-4">
+            <Card title="Add an employer">
+              <Steps>
+                <li>Go to <b>Employers</b>. Press <b>Add employer</b>.</li>
+                <li>Write the company name, country and contact person.</li>
+                <li>On the employer page, write down a <b>check</b>. For example, you confirmed the company is real.</li>
+                <li>When the check is good, press <b>Mark as vetted</b>.</li>
+              </Steps>
+            </Card>
+            <Card title="Add a job">
+              <Steps>
+                <li>Go to <b>Job orders</b>. Press <b>New job order</b>.</li>
+                <li>Pick the employer. Write the job, the country and how many workers.</li>
+                <li>Choose <b>who pays the costs</b>. Either the employer pays you back later, or the candidate pays you.</li>
+              </Steps>
+            </Card>
+          </div>
+          <Tip>Employers can have their own login. They can look at candidates and ask you for more workers.</Tip>
 
-          <H2 id="employers">2. Employers and job orders</H2>
-          <Steps>
-            <li>Go to <b>Employers</b> and choose <b>Add employer</b>. Enter the company, country and contact.</li>
-            <li>On the employer&apos;s page, record a <b>check</b>, such as confirming their registration. When it has passed, choose <b>Mark as vetted</b>.</li>
-            <li>Go to <b>Job orders</b> and choose <b>New job order</b>. Pick the employer, the role, the country and how many workers.</li>
-            <li>Choose <b>who pays the costs</b>. If the employer pays, you fund the costs first and invoice them later. If the candidate pays, you charge them fees.</li>
-          </Steps>
-          <Tip>Employers can have their own login. On the employer&apos;s page, create a login and they can review candidates and ask you for more workers themselves.</Tip>
+          <H2 id="candidates">3. Candidates</H2>
+          <div className="grid lg:grid-cols-2 gap-4">
+            <Card title="Add a candidate">
+              <Steps>
+                <li>Go to <b>Candidates</b>.</li>
+                <li>Press <b>Add candidate</b> for one person. Press <b>Import CSV</b> for many people.</li>
+                <li>Tick the box that says they agree to you keeping their details.</li>
+              </Steps>
+              <p className="mt-3">Candidates can also sign up by themselves with your link.</p>
+            </Card>
+            <Card title="Papers">
+              <Steps>
+                <li>Open the candidate. Upload their papers, such as passport and ID.</li>
+                <li>Write the date each paper ends. You will get a warning before it does.</li>
+                <li>Go to <b>Verify documents</b>. Look at each paper. Press <b>Verify</b> if it is good, or <b>Reject</b> if it is not.</li>
+              </Steps>
+            </Card>
+          </div>
 
-          <H2 id="candidates">3. Candidates and documents</H2>
-          <Steps>
-            <li>Go to <b>Candidates</b>. Choose <b>Add candidate</b> for one person, or <b>Import CSV</b> to bring in a whole spreadsheet.</li>
-            <li>Tick the box to confirm the candidate agreed to you keeping their details.</li>
-            <li>Open the candidate and upload their <b>documents</b>: passport, national ID, certificates. Add the expiry date so you get a warning in time.</li>
-            <li>Open <b>Verify documents</b> (or the To do page). Look at each file, then choose <b>Verify</b> or <b>Reject</b>.</li>
-          </Steps>
-          <p className="mt-3">Candidates can also register themselves on your candidate page, send their own documents and apply for jobs.</p>
-
-          <H2 id="stages">4. The nine stages</H2>
-          <p>Every candidate is on one of nine stages. Open their page and read the box at the top: it lists what is missing, ticks off what is done, and shows a button for the next stage that unlocks when nothing is left.</p>
-          <div className="card p-0 overflow-x-auto mt-3">
+          <H2 id="stages">4. The nine steps</H2>
+          <p>Every candidate is on one of nine steps. Open a candidate and read the box at the top. It shows what is missing and what is done. When nothing is missing, the button for the next step turns on.</p>
+          <div className="card p-0 overflow-x-auto mt-4">
             <table className="table">
-              <thead><tr><th>Stage</th><th>What it needs</th></tr></thead>
+              <thead><tr><th>Step</th><th>What you need</th></tr></thead>
               <tbody>{STAGES.map(([s, d], i) => <tr key={s}><td className="whitespace-nowrap font-semibold">{i + 1}. {s}</td><td>{d}</td></tr>)}</tbody>
             </table>
           </div>
-          <Tip>Match a candidate to a job from their page. Only an admin can skip a requirement, and must give a reason that is recorded.</Tip>
+          <Tip>Only an admin can skip a rule. The admin must write why. It is saved.</Tip>
 
           <H2 id="money">5. Money</H2>
-          <p>Money is on each candidate&apos;s page, under <b>Money</b>. What you see depends on who pays.</p>
-          <h3 className="h2 mt-4">When the employer pays</h3>
-          <Steps>
-            <li>Record each <b>cost</b> as you pay it: passport, medical, visa, flight. Costs cannot be edited, only reversed, so the record stays honest.</li>
-            <li>Raise an <b>invoice</b> to the employer, in their currency.</li>
-            <li>When they pay, <b>record the payment</b> against the invoice. Partial payments are fine.</li>
-          </Steps>
-          <h3 className="h2 mt-4">When the candidate pays</h3>
-          <Steps>
-            <li>Add the <b>fees</b> and their due dates. The candidate is reminded before each is due.</li>
-            <li>Ask for payment by <b>M-Pesa</b>. A prompt appears on their phone and the payment is recorded when they enter their PIN.</li>
-            <li>A <b>receipt</b> is issued and sent to them.</li>
-          </Steps>
-          <p className="mt-3">The <b>Finance</b> page shows the money you have out, what employers owe you, and what came in. <b>Reports</b> shows profit per worker.</p>
+          <p>Money is on each candidate page, in the box called <b>Money</b>. What you see depends on who pays.</p>
+          <div className="grid lg:grid-cols-2 gap-4 mt-4">
+            <Card title="If the employer pays">
+              <Steps>
+                <li>Write down each <b>cost</b> when you pay it. For example passport, medical, visa and flight. You cannot change a cost later. You can only cancel it with a new entry.</li>
+                <li>Send the employer an <b>invoice</b>.</li>
+                <li>When they pay, write down the <b>payment</b>. They can pay a little at a time.</li>
+              </Steps>
+            </Card>
+            <Card title="If the candidate pays">
+              <Steps>
+                <li>Add the <b>fees</b> and the date each is due. The candidate gets a reminder.</li>
+                <li>Ask for payment by <b>M-Pesa</b>. A message pops up on their phone. They type their PIN.</li>
+                <li>The system saves the payment and sends a <b>receipt</b>.</li>
+              </Steps>
+            </Card>
+          </div>
+          <p className="mt-4">The <b>Finance</b> page shows money you spent, money employers owe you, and money you got. The <b>Reports</b> page shows your profit for each worker.</p>
 
-          <H2 id="after">6. After they fly</H2>
-          <p>When a candidate reaches <b>Deployed</b>, check-ins are scheduled for you after 30, 90 and 180 days. They appear on the <b>To do</b> page when they are due. Call the worker, then record how they are: doing well, a concern, or unreachable.</p>
-          <p className="mt-3">Workers can raise a complaint from their own page, or you can record one for them. Every complaint stays on your To do list until you mark it resolved with an explanation.</p>
+          <H2 id="after">6. After they travel</H2>
+          <p>When a candidate reaches <b>Deployed</b>, the system plans three check-ins for you. They are after 30, 90 and 180 days. They show on the <b>To do</b> page when it is time. Call the worker. Then write down how they are: well, a worry, or could not reach.</p>
+          <p className="mt-3">Workers can send a complaint from their own page. You can also write one for them. Each complaint stays on your To do list until you close it and say how you fixed it.</p>
 
-          <H2 id="portals">7. Candidate and employer pages</H2>
-          <ul className="grid gap-2 list-disc pl-5">
-            <li><b>Candidates</b> sign in with a code sent to their phone. They see where they are, what they need to send, their appointments and their payments, and they can apply for jobs and ask for their data.</li>
-            <li><b>Employers</b> sign in with the login you gave them. They review shortlisted candidates, ask for interviews, select, and record the contract terms they signed.</li>
-          </ul>
+          <H2 id="portals">7. Their own pages</H2>
+          <div className="grid lg:grid-cols-2 gap-4">
+            <Card title="Candidates">They sign in with a code sent to their phone. They see their step, what to send, their appointments and their payments. They can also apply for jobs.</Card>
+            <Card title="Employers">They sign in with the login you gave them. They look at candidates, ask for interviews and pick workers. They also save the contract they signed.</Card>
+          </div>
 
-          <H2 id="messages">8. Messages and SMS credits</H2>
-          <p>The system sends messages by itself when a candidate moves forward, an appointment is booked, a fee is due or a document is about to expire. See everything sent on the <b>Messages</b> page.</p>
-          <ul className="grid gap-2 mt-3 list-disc pl-5">
-            <li>Each text uses <b>one SMS credit</b>. A long text uses more.</li>
-            <li>New agencies start with free credits. To top up, open <b>Billing</b>, choose an amount and pay by M-Pesa. The credits are added as soon as the payment is confirmed.</li>
-            <li>To send under your own name, go to Settings, Messages and connect your sender ID and email address. They are approved before use.</li>
-            <li>If your credits run out, texts are not sent until you top up. Emails are not charged.</li>
-          </ul>
+          <H2 id="messages">8. Texts and credits</H2>
+          <p>The system sends messages for you. It does this when a candidate moves to a new step, when an appointment is set, when a fee is due, and when a paper is about to end. See all messages on the <b>Messages</b> page.</p>
+          <div className="grid lg:grid-cols-2 gap-4 mt-4">
+            <Card title="Credits">
+              <ul className="grid gap-2 list-disc pl-5">
+                <li>One text uses <b>one credit</b>. A long text uses more.</li>
+                <li>New agencies get free credits to start.</li>
+                <li>To get more, go to <b>Billing</b>. Pick an amount and pay by M-Pesa. Credits are added as soon as the payment goes through.</li>
+                <li>If you run out, texts are not sent until you buy more. Emails cost nothing.</li>
+              </ul>
+            </Card>
+            <Card title="Your own sender name">
+              <p>Go to Settings, then Messages. Add the name you want on your texts and the email address you want on your emails. They are checked first. Until then we use ours.</p>
+            </Card>
+          </div>
 
-          <H2 id="daily">9. Every day</H2>
-          <ul className="grid gap-2 list-disc pl-5">
-            <li>Start on <b>To do</b>. It lists documents to check, applicants to answer, check-ins due and complaints, with the most urgent first.</li>
-            <li>Use <b>Pipeline</b> to see everyone by stage, and find the people who have been waiting longest.</li>
-            <li>Use the search box at the top to find a candidate by name, phone or ID number.</li>
-            <li>Use <b>Reports</b> to see how far candidates get and where you earn.</li>
-          </ul>
+          <H2 id="daily">9. Each day</H2>
+          <div className="grid md:grid-cols-2 gap-4">
+            <Card title="Start on To do">It lists papers to check, people waiting for an answer, check-ins that are due and complaints. The most important ones are first.</Card>
+            <Card title="Use Pipeline">See everyone by step. Find the people who have waited the longest.</Card>
+            <Card title="Use search">Type a name, phone number or ID at the top to find a candidate fast.</Card>
+            <Card title="Use Reports">See how far your candidates get and where you earn money.</Card>
+          </div>
 
           <div className="card mt-12 text-center" style={{ padding: 28 }}>
-            <h2 className="h1" style={{ fontSize: 22 }}>Ready to try it?</h2>
+            <h2 className="h1" style={{ fontSize: 24 }}>Ready to try it?</h2>
             <p className="muted mt-1">Set up your agency in a few minutes.</p>
             <div className="flex justify-center gap-3 mt-4 flex-wrap">
               {signedIn ? <Link href="/" className="btn btn-primary btn-lg">Back to the app</Link> : <><Link href="/signup" className="btn btn-primary btn-lg">Start free</Link><Link href="/" className="btn btn-lg">See the features</Link></>}
