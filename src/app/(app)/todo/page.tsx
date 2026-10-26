@@ -1,6 +1,4 @@
 import Link from "next/link";
-import { Tabs } from "@/components/shell/Tabs";
-import { TABS } from "@/components/shell/tabs-data";
 import { CheckCircle2, ArrowRight } from "lucide-react";
 import { withTenant } from "@/lib/db";
 import { requireCtx } from "@/lib/session";
@@ -99,7 +97,6 @@ export default async function Todo() {
 
   return (
     <div className="grid gap-4">
-      <Tabs items={TABS.todo} />
       <PageHeader title="To do" sub={sum ? `${sum} thing${sum === 1 ? "" : "s"} waiting for you. Start at the top.` : "Nothing is waiting for you."} />
 
       {sum === 0 && (

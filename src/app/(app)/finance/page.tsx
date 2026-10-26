@@ -1,6 +1,4 @@
 import Link from "next/link";
-import { Tabs } from "@/components/shell/Tabs";
-import { TABS } from "@/components/shell/tabs-data";
 import { withTenant } from "@/lib/db";
 import { requirePageCan } from "@/lib/session";
 import { formatMoney } from "@/lib/money";
@@ -30,7 +28,6 @@ export default async function Finance() {
 
   return (
     <div className="grid gap-4">
-      <Tabs items={TABS.money} />
       <h1 className="h1">Finance</h1>
 
       <div className="card p-0 overflow-x-auto">

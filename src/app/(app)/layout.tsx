@@ -28,20 +28,44 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
   const color = /^#[0-9a-f]{6}$/i.test(info.color ?? "") ? info.color : undefined;
   const admin = can(ctx.role, "users:manage");
 
-  // One flat list. Everything else is reached from inside these six, through tabs.
-  const waiting = Number(info.n.docs) * (can(ctx.role, "documents:verify") ? 1 : 0) + Number(info.n.complaints) + Number(info.n.checkins) + Number(info.n.failed);
+  const verifyBadge = can(ctx.role, "documents:verify") ? Number(info.n.docs) : 0;
+  const waiting = verifyBadge + Number(info.n.complaints) + Number(info.n.checkins) + Number(info.n.failed);
   const groups: NavGroup[] = [
     {
-      title: "",
+      title: "Overview",
       items: [
         { href: "/", label: "Home", icon: "dashboard" },
-        { href: "/todo", label: "To do", icon: "todo", badge: waiting, tone: "warn", match: ["/todo", "/verify", "/follow-up", "/complaints", "/messages"] },
-        { href: "/pipeline", label: "Candidates", icon: "candidates", match: ["/pipeline", "/candidates"] },
-        { href: "/employers", label: "Employers and jobs", icon: "employers", match: ["/employers", "/job-orders"] },
-        ...(can(ctx.role, "finance:read") ? [{ href: "/finance", label: "Money", icon: "finance" as const, match: ["/finance", "/reports"] }] : [{ href: "/reports", label: "Reports", icon: "reports" as const }]),
-        ...(admin ? [{ href: "/settings", label: "Settings", icon: "settings" as const, match: ["/settings", "/billing"] }] : []),
+        { href: "/todo", label: "To do", icon: "todo", badge: waiting, tone: "warn" },
       ],
     },
+    {
+      title: "Recruit",
+      items: [
+        { href: "/candidates", label: "Candidates", icon: "candidates" },
+        { href: "/pipeline", label: "Pipeline", icon: "pipeline" },
+        { href: "/job-orders", label: "Job orders", icon: "jobs" },
+        { href: "/employers", label: "Employers", icon: "employers" },
+        ...(can(ctx.role, "documents:verify") ? [{ href: "/verify", label: "Verify documents", icon: "verify" as const, badge: Number(info.n.docs), tone: "warn" as const }] : []),
+      ],
+    },
+    {
+      title: "Follow through",
+      items: [
+        { href: "/follow-up", label: "Follow-up", icon: "followup", badge: Number(info.n.checkins), tone: "warn" },
+        { href: "/complaints", label: "Complaints", icon: "complaints", badge: Number(info.n.complaints), tone: "bad" },
+        ...(ctx.role !== "finance" ? [{ href: "/messages", label: "Messages", icon: "messages" as const, badge: Number(info.n.failed), tone: "bad" as const }] : []),
+      ],
+    },
+    {
+      title: "Money and insight",
+      items: [
+        ...(can(ctx.role, "finance:read") ? [{ href: "/finance", label: "Finance", icon: "finance" as const }] : []),
+        { href: "/reports", label: "Reports", icon: "reports" },
+      ],
+    },
+    ...(admin
+      ? [{ title: "Admin", items: [...(!access.singleInstall ? [{ href: "/billing", label: "Billing", icon: "billing" as const }] : []), { href: "/settings", label: "Settings", icon: "settings" as const }] }]
+      : []),
   ];
 
   return (

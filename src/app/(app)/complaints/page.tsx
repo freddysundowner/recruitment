@@ -1,6 +1,4 @@
 import Link from "next/link";
-import { Tabs } from "@/components/shell/Tabs";
-import { TABS } from "@/components/shell/tabs-data";
 import { withTenant } from "@/lib/db";
 import { requireCtx } from "@/lib/session";
 import { can } from "@/lib/perms";
@@ -21,7 +19,6 @@ export default async function Complaints() {
   const admin = can(ctx.role, "users:manage");
   return (
     <div className="grid gap-4">
-      <Tabs items={TABS.todo} />
       <div>
         <h1 className="h1">Complaints and requests</h1>
         <p className="muted">Raised by workers on the candidate portal or recorded by staff. Every complaint needs an answer.</p>
