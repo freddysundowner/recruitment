@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { withTenant } from "@/lib/db";
 import { requireCtx } from "@/lib/session";
 import { can } from "@/lib/perms";
@@ -19,10 +20,7 @@ export default async function Complaints() {
   const admin = can(ctx.role, "users:manage");
   return (
     <div className="grid gap-4">
-      <div>
-        <h1 className="h1">Complaints and requests</h1>
-        <p className="muted">Raised by workers on the candidate portal or recorded by staff. Every complaint needs an answer.</p>
-      </div>
+      <PageHeader title="Complaints and requests" sub="Raised by workers on the candidate portal or recorded by staff. Every complaint needs an answer." />
       {rows.map((x) => (
         <div key={x.id} className="card grid gap-2">
           <div className="flex items-center justify-between gap-2 flex-wrap">

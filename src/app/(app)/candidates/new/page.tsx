@@ -1,4 +1,5 @@
 import { ActionForm } from "@/components/ActionForm";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { CandidateFields } from "@/components/CandidateFields";
 import { createCandidate } from "@/app/actions/candidates";
 import { requirePageCan } from "@/lib/session";
@@ -7,7 +8,7 @@ export default async function NewCandidate() {
   await requirePageCan("candidates:write");
   return (
     <div className="grid gap-4 max-w-2xl">
-      <h1 className="h1">Add candidate</h1>
+      <PageHeader title="Add candidate" sub="Record their consent, then collect their documents on the next screen." />
       <div className="card">
         <ActionForm action={createCandidate} submit="Register candidate" resetOnSuccess={false}>
           <CandidateFields />

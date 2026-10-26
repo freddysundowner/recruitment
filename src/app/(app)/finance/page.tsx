@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { withTenant } from "@/lib/db";
 import { requirePageCan } from "@/lib/session";
 import { formatMoney } from "@/lib/money";
@@ -28,7 +29,7 @@ export default async function Finance() {
 
   return (
     <div className="grid gap-4">
-      <h1 className="h1">Finance</h1>
+      <PageHeader title="Finance" sub="Money out, money owed to you and money received." />
 
       <div className="card p-0 overflow-x-auto">
         <div className="p-4 pb-0 flex items-baseline justify-between flex-wrap gap-2">

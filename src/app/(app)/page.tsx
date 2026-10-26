@@ -106,7 +106,6 @@ export default async function Dashboard() {
     { done: n(setup.portal_signups) > 0, label: "Share your candidate page", sub: "Candidates register and apply from their phones", href: "/settings/general", show: admin && access.features.candidate_portal },
   ].filter((i) => i.show);
   const doneCount = checklist.filter((i) => i.done).length;
-  const nextUp = checklist.find((i) => !i.done);
 
   const attention = [
     { n: n(c.docs_pending), label: "documents waiting to be verified", href: "/verify", Icon: FileClock, show: can(ctx.role, "documents:verify") },
@@ -118,44 +117,37 @@ export default async function Dashboard() {
     { n: n(c.complaints), label: "open complaints", href: "/complaints", Icon: MessageSquareWarning, show: true },
     { n: n(c.failed_messages), label: "messages that failed to send", href: "/messages", Icon: AlertTriangle, show: ctx.role !== "finance" },
     { n: n(c.appts_week), label: "appointments this week", href: "/follow-up", Icon: CalendarClock, show: true },
-  ].filter((a) => a.show && a.n > 0);
+  ].filter((a) => a.show && a.n > 0).slice(0, 5);
 
   const top = Math.max(1, ...d.stages.map((s) => n(s.n)));
 
   return (
     <>
       <PageHeader title={`Welcome back, ${ctx.name.split(" ")[0]}`} sub={n(setup.sample) > 0 ? "You are looking at sample data. Remove it any time." : "Here is where your agency stands today."}>
+        {n(setup.sample) > 0 && admin && <Link href="/getting-started" className="btn btn-ghost">Manage sample data</Link>}
         {can(ctx.role, "candidates:write") && <Link href="/candidates/new" className="btn btn-primary"><Plus size={16} /> Add candidate</Link>}
         {can(ctx.role, "joborders:write") && <Link href="/job-orders/new" className="btn"><Briefcase size={16} /> New job order</Link>}
       </PageHeader>
 
-      {n(setup.sample) > 0 && admin && (
-        <div className="notice flex items-center justify-between gap-3 flex-wrap">
-          <span>This workspace contains sample candidates, employers and jobs so you can explore. They do not affect your real records.</span>
-          <Link className="btn btn-sm" href="/getting-started">Manage sample data</Link>
-        </div>
-      )}
-
       {checklist.length > 0 && doneCount < checklist.length && (
         <section className="card">
-          <div className="flex items-start justify-between gap-4 flex-wrap">
+          <div className="flex items-center justify-between gap-4 flex-wrap">
             <div>
               <div className="h2">Get set up</div>
-              <p className="muted">{doneCount} of {checklist.length} steps done. Each step takes a few minutes.</p>
+              <p className="muted">{doneCount} of {checklist.length} steps done.</p>
             </div>
-            {nextUp && <Link href={nextUp.href} className="btn btn-primary">{nextUp.label} <ArrowRight size={15} /></Link>}
+            <div className="progress w-40"><span style={{ width: `${Math.round((doneCount / checklist.length) * 100)}%` }} /></div>
           </div>
-          <div className="progress my-3"><span style={{ width: `${Math.round((doneCount / checklist.length) * 100)}%` }} /></div>
-          <ul className="grid md:grid-cols-2 gap-x-6 gap-y-1">
-            {checklist.map((i) => (
-              <li key={i.label}>
-                <Link href={i.href} className="flex items-start gap-3 py-2 rounded-lg hover:bg-[#f9fafb] -mx-2 px-2">
-                  {i.done ? <CheckCircle2 size={19} className="text-[var(--good)] mt-0.5 flex-none" /> : <CircleDashed size={19} className="muted mt-0.5 flex-none" />}
-                  <span className="min-w-0">
-                    <span className={`block font-semibold ${i.done ? "muted line-through" : ""}`}>{i.label}</span>
+          <ul className="mt-2">
+            {checklist.filter((i) => !i.done).slice(0, 3).map((i, k) => (
+              <li key={i.label} className="border-t border-[var(--line-2)] first:border-0">
+                <Link href={i.href} className="flex items-center gap-3 py-2.5 hover:bg-[#f9fafb] rounded-lg -mx-2 px-2">
+                  <CircleDashed size={19} className="muted flex-none" />
+                  <span className="min-w-0 flex-1">
+                    <span className="block font-semibold">{i.label}</span>
                     <span className="block text-xs muted">{i.sub}</span>
                   </span>
-                  {!i.done && <ChevronRight size={16} className="muted ml-auto mt-0.5 flex-none" />}
+                  {k === 0 ? <span className="btn btn-sm btn-primary">Start <ArrowRight size={14} /></span> : <ChevronRight size={16} className="muted flex-none" />}
                 </Link>
               </li>
             ))}
@@ -172,7 +164,7 @@ export default async function Dashboard() {
 
       <div className="grid lg:grid-cols-5 gap-4">
         <section className="card lg:col-span-3">
-          <div className="flex items-center justify-between mb-3"><div className="h2">Needs your attention</div><span className="muted text-xs">{attention.length === 0 ? "All clear" : `${attention.length} item${attention.length === 1 ? "" : "s"}`}</span></div>
+          <div className="flex items-center justify-between mb-3"><div className="h2">Needs your attention</div><Link href="/todo" className="link text-sm">See everything</Link></div>
           {attention.length === 0 ? (
             <div className="flex items-center gap-3 py-6 justify-center muted"><CheckCircle2 className="text-[var(--good)]" /> Nothing is waiting on you right now.</div>
           ) : (
@@ -227,7 +219,7 @@ export default async function Dashboard() {
         <div className="h2 mb-2">Recent activity</div>
         {d.activity.length === 0 ? <p className="muted">Nothing has happened yet. Add your first candidate to get started.</p> : (
           <ul>
-            {d.activity.map((a, i) => (
+            {d.activity.slice(0, 6).map((a, i) => (
               <li key={i} className="flex items-center justify-between gap-3 py-2 border-b border-[var(--line-2)] last:border-0">
                 <span className="text-[var(--ink-2)]">{phrase(a.action, a.who)}</span>
                 <span className="muted text-xs whitespace-nowrap">{ago(a.created_at, d.now)}</span>

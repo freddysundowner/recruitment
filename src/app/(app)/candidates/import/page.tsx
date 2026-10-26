@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { ActionForm } from "@/components/ActionForm";
 import { importCandidates } from "@/app/actions/candidates";
 import { requirePageCan } from "@/lib/session";
@@ -7,10 +8,7 @@ export default async function ImportCandidates() {
   await requirePageCan("candidates:write");
   return (
     <div className="grid gap-4 max-w-2xl">
-      <div className="flex items-center justify-between">
-        <h1 className="h1">Import candidates</h1>
-        <Link href="/candidates" className="link">Back to candidates</Link>
-      </div>
+      <PageHeader title="Import candidates" sub="Bring in a spreadsheet of people in one go."><Link href="/candidates" className="btn btn-ghost">Back to candidates</Link></PageHeader>
       <div className="card grid gap-3">
         <p>
           Bring in records from your books or a spreadsheet. Save it as CSV with a header row. Required columns:{" "}

@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { withTenant } from "@/lib/db";
 import { requireCtx } from "@/lib/session";
 import { can } from "@/lib/perms";
@@ -31,7 +32,7 @@ export default async function Billing({ searchParams }: PageProps<"/billing">) {
 
   return (
     <div className="grid gap-4">
-      <h1 className="h1">Billing</h1>
+      <PageHeader title="Billing" sub="Your plan, what it includes, and how to pay for it." />
       {sp.paid && <div className="badge badge-good w-fit">Thank you. Your card payment will show here in a moment.</div>}
       <div className="card grid sm:grid-cols-3 gap-3">
         <div><div className="muted text-xs font-semibold">Plan</div><div className="text-xl font-bold">{a.planName}</div></div>

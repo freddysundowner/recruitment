@@ -1,4 +1,5 @@
 import { ActionForm } from "@/components/ActionForm";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { createJobOrder } from "@/app/actions/org";
 import { requirePageCan } from "@/lib/session";
 import { withTenant } from "@/lib/db";
@@ -9,7 +10,7 @@ export default async function NewJobOrder() {
   const employers = await withTenant(ctx.tenantId, (tx) => tx`SELECT id, company, country FROM employers ORDER BY company`);
   return (
     <div className="grid gap-4 max-w-2xl">
-      <h1 className="h1">New job order</h1>
+      <PageHeader title="New job order" sub="What an employer has asked for, and who pays the costs." />
       <div className="card">
         {employers.length === 0 ? (
           <p>Add an employer first.</p>

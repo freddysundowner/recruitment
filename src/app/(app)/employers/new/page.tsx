@@ -1,4 +1,5 @@
 import { ActionForm } from "@/components/ActionForm";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { createEmployer } from "@/app/actions/org";
 import { requirePageCan } from "@/lib/session";
 import { CURRENCIES } from "@/lib/money";
@@ -7,7 +8,7 @@ export default async function NewEmployer() {
   await requirePageCan("employers:write");
   return (
     <div className="grid gap-4 max-w-2xl">
-      <h1 className="h1">Add employer</h1>
+      <PageHeader title="Add employer" sub="You record how you checked them on the next screen." />
       <div className="card">
         <ActionForm action={createEmployer} submit="Save employer" resetOnSuccess={false}>
           <div className="grid sm:grid-cols-2 gap-3">

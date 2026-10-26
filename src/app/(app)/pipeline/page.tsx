@@ -87,7 +87,7 @@ export default async function Pipeline({ searchParams }: PageProps<"/pipeline">)
         {can(ctx.role, "candidates:write") && <Link href="/candidates/new" className="btn btn-primary"><Plus size={16} /> Add candidate</Link>}
       </PageHeader>
 
-      <form className="card flex flex-wrap items-end gap-3" style={{ padding: 14 }}>
+      <form className="flex flex-wrap items-center gap-2">
         {list && <input type="hidden" name="view" value="list" />}
         {stageId && <input type="hidden" name="stage" value={stageId} />}
         <div className="search" style={{ maxWidth: 280, flex: "1 1 220px" }}>

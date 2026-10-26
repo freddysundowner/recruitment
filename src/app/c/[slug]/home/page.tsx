@@ -49,11 +49,12 @@ export default async function Home({ params }: PageProps<"/c/[slug]/home">) {
               {p.outcome !== "closed" && <p className="mt-1">{p.description}</p>}
             </div>
             {p.outcome !== "closed" && (
-              <ol className="flex flex-wrap gap-1.5">
-                {d.stages.map((s) => (
-                  <li key={s.position} className={`badge ${s.position < p.position ? "badge-good" : s.position === p.position ? "!bg-[var(--brand)] !text-white" : ""}`}>{s.position}. {s.name}</li>
-                ))}
-              </ol>
+              <div>
+                <div className="steps-strip" aria-label={`Step ${p.position} of ${d.stages.length}`}>
+                  {d.stages.map((s) => <i key={s.position} className={s.position < p.position ? "done" : s.position === p.position ? "now" : ""} title={s.name} />)}
+                </div>
+                <div className="muted text-xs mt-1">Step {p.position} of {d.stages.length}</div>
+              </div>
             )}
           </div>
         )}

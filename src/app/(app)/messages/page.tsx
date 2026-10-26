@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { withTenant } from "@/lib/db";
 import { requireCtx } from "@/lib/session";
 import { smsConfigured } from "@/lib/providers/sms";
@@ -17,7 +18,7 @@ export default async function Messages() {
   const providers = [["SMS", smsConfigured()], ["WhatsApp", whatsappConfigured()], ["Email", emailConfigured()]] as const;
   return (
     <div className="grid gap-4">
-      <h1 className="h1">Messages</h1>
+      <PageHeader title="Messages" sub="Every SMS, WhatsApp and email the system sends or tries to send." />
       <div className="card flex flex-wrap items-center gap-3">
         {providers.map(([n, on]) => <span key={n} className={`badge ${on ? "badge-good" : "badge-warn"}`}>{n}: {on ? "connected" : "not connected, messages are only recorded"}</span>)}
         <span className="muted text-sm">{Number(d.counts.queued)} waiting · {Number(d.counts.failed)} failed</span>

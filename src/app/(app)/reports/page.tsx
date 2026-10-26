@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { withTenant } from "@/lib/db";
 import { requireCtx } from "@/lib/session";
 import { can } from "@/lib/perms";
@@ -74,15 +75,14 @@ export default async function Reports({ searchParams }: PageProps<"/reports">) {
 
   return (
     <div className="grid gap-4">
-      <div className="flex items-end justify-between gap-3 flex-wrap">
-        <h1 className="h1">Reports</h1>
+      <PageHeader title="Reports" sub="How candidates move through your pipeline, and what it earns.">
         <form className="flex items-end gap-2 flex-wrap">
           <div><label className="label" htmlFor="from">From</label><input id="from" name="from" type="date" defaultValue={from} className="input" /></div>
           <div><label className="label" htmlFor="to">To</label><input id="to" name="to" type="date" defaultValue={to} className="input" /></div>
           <button className="btn">Apply</button>
           <PrintButton />
         </form>
-      </div>
+      </PageHeader>
 
       <div className="card">
         <div className="h2 mb-1">How far candidates got</div>

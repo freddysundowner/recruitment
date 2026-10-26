@@ -161,7 +161,7 @@ export async function Money({ p, tenantId, canWrite, open }: { p: P; tenantId: s
             {employerPays && (
               <div>
                 <label className="label" htmlFor="invoice_id">Against invoice</label>
-                <select id="invoice_id" name="invoice_id" className="select" defaultValue="">
+                <select id="invoice_id" name="invoice_id" className="select" defaultValue={fin.invoices.find((i) => i.status === "open")?.id ?? ""} key={fin.invoices.map((i) => i.id + i.status).join()}>
                   <option value="">—</option>
                   {fin.invoices.filter((i) => i.status === "open").map((i) => <option key={i.id} value={i.id}>{i.number}</option>)}
                 </select>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { withTenant } from "@/lib/db";
 import { requirePageCan } from "@/lib/session";
 import { ActionForm } from "@/components/ActionForm";
@@ -11,10 +12,7 @@ export default async function Verify() {
     FROM documents d JOIN candidates c ON c.id = d.candidate_id WHERE d.status = 'pending' ORDER BY d.created_at LIMIT 100`);
   return (
     <div className="grid gap-4">
-      <div>
-        <h1 className="h1">Documents to verify</h1>
-        <p className="muted">Open each document, check it against the candidate, then verify or reject it. Uploads from candidates appear here.</p>
-      </div>
+      <PageHeader title="Documents to verify" sub="Open each document, check it against the candidate, then verify or reject it." />
       <div className="card p-0 overflow-x-auto">
         <table className="table">
           <thead><tr><th>Candidate</th><th>Document</th><th>Expires</th><th>Sent</th><th></th></tr></thead>

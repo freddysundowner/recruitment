@@ -80,6 +80,16 @@ npm test
 
 If `vitest` says "Cannot find native binding" on macOS, npm skipped an optional package: `npm i -D --no-save @rolldown/binding-darwin-x64` (or `-arm64`).
 
+## End-to-end test
+
+With the app running (`npm run dev`) and the demo data seeded:
+
+```bash
+npm run e2e
+```
+
+`e2e/journey.mjs` drives a real browser through a brand-new agency: sign-up, employer and vetting, job order, a candidate through all nine stages with documents, contract, visa and arrival, money, an employer portal login, every sidebar and settings page, and a candidate registering. `e2e/platform-and-mobile.mjs` opens the platform console and checks the main pages at phone width. Both need Chromium from a Playwright install (`npx playwright-core install chromium`) and create a fresh agency each run.
+
 ## Settings reference
 
 All are in `.env.example` and `.env.prod.example`. The important ones: `SESSION_SECRET`, `FIELD_ENCRYPTION_KEY` (back this up), `APP_URL`, `TENANT_MODE` (`single` for one agency), `LICENSE_PUBLIC_KEY`, provider keys for SMS, WhatsApp, email, M-Pesa and Stripe, and storage and scanning options.

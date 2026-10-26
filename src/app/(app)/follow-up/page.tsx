@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { withTenant } from "@/lib/db";
 import { requireCtx } from "@/lib/session";
 
@@ -24,7 +25,7 @@ export default async function FollowUp() {
   }));
   return (
     <div className="grid gap-4">
-      <h1 className="h1">Follow-up</h1>
+      <PageHeader title="Follow-up" sub="Workers abroad who are due a call, and what is coming up." />
       <div className="card p-0 overflow-x-auto">
         <div className="p-4 pb-0 h2">Workers to check on</div>
         <table className="table mt-2">
