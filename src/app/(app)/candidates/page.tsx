@@ -54,7 +54,24 @@ export default async function Candidates({ searchParams }: PageProps<"/candidate
             )}
           </EmptyState>
         ) : (
-          <table className="table">
+          <>
+          <div className="m-list">
+            {rows.map((r) => (
+              <Link key={r.id} href={`/candidates/${r.id}`} className="m-row">
+                <span className="avatar" style={{ width: 40, height: 40 }}>{`${r.first_name[0]}${r.last_name[0]}`}</span>
+                <span className="flex-1 min-w-0">
+                  <span className="block font-semibold text-[var(--ink)] truncate">{r.first_name} {r.last_name}</span>
+                  <span className="block text-xs muted truncate">{r.job ?? "Not matched yet"}{r.country ? ` · ${r.country}` : ""}</span>
+                  <span className="flex flex-wrap gap-1 mt-1">
+                    {r.stage ? <span className="badge badge-brand">{r.position}. {r.stage}</span> : <span className="badge">{r.status}</span>}
+                    {Number(r.pending_docs) > 0 && <span className="badge badge-warn">{r.pending_docs} to verify</span>}
+                    {Number(r.expiring) > 0 && <span className="badge badge-bad">{r.expiring} expiring</span>}
+                  </span>
+                </span>
+              </Link>
+            ))}
+          </div>
+          <table className="table d-table">
             <thead><tr><th>Candidate</th><th>Stage</th><th>Job</th><th>Alerts</th></tr></thead>
             <tbody>
               {rows.map((r) => (
@@ -78,6 +95,7 @@ export default async function Candidates({ searchParams }: PageProps<"/candidate
               ))}
             </tbody>
           </table>
+          </>
         )}
       </div>
     </>

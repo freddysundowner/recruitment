@@ -11,9 +11,11 @@ export const metadata: Metadata = {
   applicationName: SITE.name,
   openGraph: { type: "website", siteName: SITE.name, locale: "en_KE" },
   twitter: { card: "summary_large_image" },
+  appleWebApp: { capable: true, title: "Recruitment", statusBarStyle: "default" },
+  formatDetection: { telephone: false },
 };
 
-export const viewport: Viewport = { themeColor: "#0f6b5c", width: "device-width", initialScale: 1 };
+export const viewport: Viewport = { themeColor: "#0f6b5c", width: "device-width", initialScale: 1, viewportFit: "cover" };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (

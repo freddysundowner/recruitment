@@ -57,6 +57,22 @@ const errorsOn = (p, bag) => { p.on("pageerror", (e) => bag.push(e.message)); };
     const w = await page.evaluate(() => ({ doc: document.documentElement.scrollWidth, win: window.innerWidth }));
     check(w.doc <= w.win + 1, `phone: ${p} fits (${w.doc}px of ${w.win}px)`);
   }
+  // it behaves like an app: a bottom bar, a More sheet and a round add button
+  await page.goto(`${BASE}/candidates`);
+  await page.locator(".tabbar").waitFor();
+  check((await page.locator(".tabbar .tab-item").count()) === 5, "phone: the bottom bar has five tabs");
+  check(await page.locator(".sidebar").isHidden(), "phone: the side menu is hidden");
+  check(await page.locator(".fab").isVisible(), "phone: there is a round add button on the candidates page");
+  check(await page.locator(".m-list .m-row").first().isVisible(), "phone: candidates show as a tappable list");
+  await page.getByRole("button", { name: "More" }).click();
+  await page.locator(".sheet").waitFor();
+  check(await page.locator(".sheet").getByText("Settings").isVisible() && await page.locator(".sheet").getByText("Sign out").isVisible(), "phone: More lists the rest of the menu and Sign out");
+  await page.locator(".scrim").click({ position: { x: 20, y: 40 } });
+  check(await page.locator(".sheet").count() === 0, "phone: tapping outside closes the sheet");
+  await page.goto(`${BASE}/candidates/new`);
+  const fs = await page.locator("#first_name").evaluate((el) => parseFloat(getComputedStyle(el).fontSize));
+  check(fs >= 16, `phone: inputs are ${fs}px, so the phone does not zoom in`);
+
   // a candidate page, stage by stage
   await page.goto(`${BASE}/candidates`);
   const href = await page.locator("main a[href^='/candidates/']").evaluateAll((as) => as.map((a) => a.getAttribute("href")).find((h) => /[0-9a-f-]{36}$/.test(h)));
@@ -65,6 +81,14 @@ const errorsOn = (p, bag) => { p.on("pageerror", (e) => bag.push(e.message)); };
   const w = await page.evaluate(() => ({ doc: document.documentElement.scrollWidth, win: window.innerWidth }));
   check(w.doc <= w.win + 1, `phone: candidate page fits (${w.doc}px of ${w.win}px)`);
   await page.getByRole("button", { name: /menu/i }).first().click().catch(() => {});
+}
+// the app can be added to a home screen
+{
+  const page = await (await browser.newContext()).newPage();
+  const m = await (await page.request.get(`${BASE}/manifest.webmanifest`)).json();
+  check(m.display === "standalone" && m.start_url === "/" && m.icons.length >= 2, "manifest: opens full screen from the home screen");
+  for (const i of m.icons) check((await page.request.get(`${BASE}${i.src}`)).ok(), `manifest: icon ${i.src} loads`);
+  check((await page.request.get(`${BASE}/apple-icon`)).ok(), "manifest: the iPhone icon loads");
 }
 await browser.close();
 if (failed) { console.log(`\n${failed} check(s) failed.`); process.exit(1); }

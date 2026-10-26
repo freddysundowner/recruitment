@@ -3,7 +3,7 @@ import type { NextRequest } from "next/server";
 
 // Optimistic check only: send visitors without a session cookie to the sign-in page.
 // Every page and action still verifies the session against the database.
-const PUBLIC = ["/login", "/api/", "/c/", "/signup", "/setup", "/welcome", "/guide", "/sitemap.xml", "/robots.txt", "/icon", "/platform", "/_next", "/favicon.ico"];
+const PUBLIC = ["/login", "/api/", "/c/", "/signup", "/setup", "/welcome", "/guide", "/sitemap.xml", "/robots.txt", "/icon", "/apple-icon", "/pwa-icon", "/manifest.webmanifest", "/platform", "/_next", "/favicon.ico"];
 
 export function proxy(request: NextRequest) {
   const path = request.nextUrl.pathname;

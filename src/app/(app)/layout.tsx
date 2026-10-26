@@ -76,7 +76,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
 
   return (
     <div style={color ? ({ "--brand": color } as React.CSSProperties) : undefined}>
-      <AppShell groups={groups} brand={info.brand} user={{ name: ctx.name, role: ROLE_LABEL[ctx.role] }} logout={logout}>
+      <AppShell groups={groups} brand={info.brand} user={{ name: ctx.name, role: ROLE_LABEL[ctx.role] }} logout={logout} fab={can(ctx.role, "candidates:write") ? { href: "/candidates/new", label: "Add candidate" } : undefined}>
         {ctx.support && (
           <div className="alert flex items-center justify-between gap-3 flex-wrap">
             <span>Support access by {ctx.support}. This session is read-only and is recorded in this agency&apos;s activity log.</span>

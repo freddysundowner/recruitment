@@ -6,6 +6,7 @@ import { getAccess } from "@/lib/plan";
 import { Suspense } from "react";
 import { NextStepHost } from "@/components/NextStepHost";
 import { logout } from "../actions/auth";
+import { BottomTabs } from "@/components/shell/BottomTabs";
 
 import type { Metadata } from "next";
 
@@ -27,7 +28,7 @@ export default async function EmployerLayout({ children }: LayoutProps<"/employe
   const brand = /^#[0-9a-f]{6}$/i.test(info.agency.settings?.brand_color ?? "") ? info.agency.settings.brand_color : undefined;
   return (
     <div className="min-h-screen" style={brand ? ({ "--brand": brand } as React.CSSProperties) : undefined}>
-      <header className="bg-[var(--brand)] text-white">
+      <header className="bg-[var(--brand)] text-white portal-head">
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between gap-3 flex-wrap">
           <div><div className="font-bold text-lg">{info.company}</div><div className="text-xs opacity-80">Employer portal · {info.agency.settings?.brand_name || info.agency.name}</div></div>
           <div className="flex items-center gap-3 text-sm">
@@ -36,13 +37,14 @@ export default async function EmployerLayout({ children }: LayoutProps<"/employe
             <form action={logout}><button className="underline">Sign out</button></form>
           </div>
         </div>
-        <nav className="max-w-5xl mx-auto px-2 flex overflow-x-auto">
+        <nav className="max-w-5xl mx-auto px-2 flex overflow-x-auto desk-only">
           {[["/employer", "Overview"], ["/employer/request", "Request workers"], ["/employer/invoices", "Invoices"]].map(([h, l]) => (
             <Link key={h} href={h} className="px-3 py-2 text-sm font-medium whitespace-nowrap hover:bg-white/15">{l}</Link>
           ))}
         </nav>
       </header>
-      <main className="max-w-5xl mx-auto p-4 grid gap-4"><Suspense><NextStepHost /></Suspense>{children}</main>
+      <BottomTabs items={[{ href: "/employer", label: "Overview", icon: "overview", exact: true }, { href: "/employer/request", label: "Request", icon: "request" }, { href: "/employer/invoices", label: "Invoices", icon: "invoices" }]} />
+      <main className="max-w-5xl mx-auto p-4 grid gap-4 portal-main"><Suspense><NextStepHost /></Suspense>{children}</main>
     </div>
   );
 }
